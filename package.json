@@ -1,0 +1,22 @@
+{
+	"name": "htmleditor",
+	"version": "1.0.0",
+	"description": "Live Editor for HTML, CSS and JS",
+	"main": "main.js",
+	"scripts": {
+		"start": "electron ."
+	},
+	"author": "Ethan Mahlstedt",
+	"license": "ISC",
+	"devDependencies": {
+		"@eslint/js": "^9.19.0",
+		"electron": "^33.3.1",
+		"eslint": "^9.19.0",
+		"eslint-config-prettier": "^10.0.1",
+		"globals": "^15.14.0",
+		"prettier": "3.4.2"
+	},
+	"dependencies": {
+		"needle-db": "^1.1.3"
+	}
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>New File</title>
+		<link rel="stylesheet" href="newFileDialog.css" />
+	</head>
+	<body>
+		<div class="mainContainerDiv">
+			<div id="fileNameDiv" class="containerDiv">
+				<label for="fileName">Filename: </label>
+				<textarea name="fileName" id="filenameField"></textarea>
+			</div>
+			<div id="fileDirDiv" class="containerDiv">
+				<label for="PickFolderBtn">Folder: </label>
+				<button id="PickFolderBtn" name="PickFolderBtn">Pick Folder...</button>
+			</div>
+			<div id="fileDirLblDiv" class="containerDiv">
+				<label id="fileDirLbl">(none)</label>
+			</div>
+			<div id="presetDiv" class="containerDiv">
+				<label for="presetPicker">Pick preset file: </label>
+				<select name="presetPicker" id="presetPicker">
+					<option value="none">(none)</option>
+				</select>
+			</div>
+			<div id="createFileBtnDiv" class="containerDiv">
+				<button id="createFileBtn">Create File</button>
+			</div>
+		</div>
+		<script src="newFileDialog.js"></script>
+	</body>
+</html>
