@@ -1,0 +1,83 @@
+html,
+body {
+	background-color: rgb(32, 32, 32);
+}
+
+label {
+	color: white;
+	font-family: "Arial";
+	font-weight: bold;
+	vertical-align: middle;
+}
+
+textarea {
+	position: relative;
+	resize: none;
+	vertical-align: middle;
+	border: 2px solid black;
+	font-size: 16px;
+	height: 20px;
+	font-family: Arial;
+	width: calc(100% - 2%);
+	margin: 0.5% auto;
+	overflow: hidden;
+}
+
+.containerDiv {
+	background-color: rgb(64, 64, 64);
+	border-radius: 5px;
+	padding: 1%;
+	display: flex;
+	flex-direction: row;
+	box-sizing: border-box;
+	gap: 10px;
+	align-items: center;
+}
+
+.mainContainerDiv {
+	background-color: rgb(48, 48, 48);
+	padding: 1%;
+	border-radius: 5px;
+	gap: 10px;
+	display: flex;
+	flex-direction: column;
+	height: 92vh;
+}
+
+#fileDirLbl {
+	font-weight: normal;
+	font-size: 12;
+	text-wrap: wrap;
+	overflow-wrap: anywhere;
+}
+
+button {
+	background-color: gray;
+	font-family: Arial;
+	color: black;
+	padding: 5px 10px;
+	border-radius: 5px;
+	border: 2px ridge black;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease;
+}
+
+button:hover {
+	background-color: rgb(64, 64, 64);
+	color: white;
+}
+
+#createFileBtnDiv {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	align-self: flex-end;
+	width: 94%;
+	position: absolute;
+	bottom: 20px;
+	left: 10px;
+}

@@ -1,0 +1,139 @@
+html,
+body {
+	height: 100%;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	background-color: rgb(64, 64, 64);
+}
+
+#FilePicker,
+#Controls {
+	background-color: rgb(32, 32, 32);
+	padding: 0.5%;
+	margin: 0.3% auto;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: calc(100% - 1%);
+	box-sizing: border-box;
+	border-radius: 5px;
+}
+
+.fileDiv {
+	background-color: rgb(48, 48, 48);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 5px 10px;
+	border-radius: 5px;
+	box-sizing: border-box;
+	transition: background-color 0.2s ease;
+}
+
+.fileDiv:hover {
+	background-color: rgb(64, 64, 64);
+}
+
+.curFileDiv {
+	background-color: rgb(64, 64, 64);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 5px 10px;
+	border-radius: 5px;
+	box-sizing: border-box;
+	transition: background-color 0.2s ease;
+}
+
+.curFileDiv:hover {
+	background-color: rgb(96, 96, 96);
+}
+
+.fileDivText {
+	font-family: "Segoe UI";
+	color: white;
+	margin: 0;
+	margin-right: 10px;
+	white-space: nowrap;
+}
+
+.fileDivBtn {
+	width: 32px;
+	height: 32px;
+	border: 1px ridge black;
+	border-radius: 5px;
+	background-color: gray;
+	color: black;
+	font-weight: bold;
+	cursor: pointer;
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease;
+}
+
+.fileDivBtn:hover {
+	background-color: rgb(64, 64, 64);
+	color: white;
+}
+
+button {
+	background-color: gray;
+	font-family: Arial;
+	color: black;
+	padding: 5px 10px;
+	border-radius: 5px;
+	border: 0px ridge black;
+	font-size: 16px;
+	font-weight: bold;
+	cursor: pointer;
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease;
+}
+
+button:hover {
+	background-color: rgb(64, 64, 64);
+	color: white;
+}
+
+#TextAreaContainer {
+	display: flex;
+	width: calc(100% - 2%);
+	height: 90%;
+	margin: 0.5% auto;
+	background-color: rgb(32, 32, 32);
+	border: 1px solid rgb(48, 48, 48);
+	border-radius: 5px;
+	overflow: hidden;
+}
+
+#lineNumbers {
+	background-color: rgb(48, 48, 48);
+	color: white;
+	font-family: Consolas, monospace;
+	font-size: 18px;
+	line-height: 1.5em;
+	padding: 5px 5px 5px 0;
+	text-align: right;
+	width: 50px;
+	box-sizing: border-box;
+	overflow: hidden;
+	white-space: pre;
+}
+
+textarea {
+	flex-grow: 1;
+	background-color: rgb(32, 32, 32);
+	color: white;
+	font-family: Consolas, monospace;
+	font-size: 18px;
+	line-height: 1.5em;
+	padding: 5px;
+	border: none;
+	outline: none;
+	resize: none;
+	overflow-y: scroll;
+	tab-size: 4;
+	white-space: pre;
+}
