@@ -28,8 +28,7 @@ let currentFile = null;
 
 // TODO: Make a scrollbar on FileDivContainer for overflow
 
-function printOnBackConsole(args) {
-	// eslint-disable-line
+function printOnBackConsole(args) {// eslint-disable-line
 	// Debug function
 
 	ipcRenderer.send("printOnBackConsole", args);
@@ -211,8 +210,10 @@ saveButton.addEventListener("click", () => {
 	ipcRenderer.send(
 		"save-file",
 		currentFile,
-		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile)),
-		"data",
+		OpenedFiles.READ(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"data",
+		),
 	);
 });
 
@@ -270,9 +271,17 @@ document.getElementById("RefreshEditor").addEventListener("click", () => {
 			"pickOpenedDisplay",
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 		);
+	} else {
+		ipcRenderer.send(
+			"restartDisplay",
+			OpenedFiles.READ(
+				OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+				"linkedDisplay",
+			),
+		);
 	}
 });
 
-ipcRenderer.on("linkEditor", (event, display, fileID) => {
+ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 	OpenedFiles.SET(fileID, "linkedDisplay", display);
 });
