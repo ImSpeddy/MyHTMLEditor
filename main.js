@@ -1,5 +1,11 @@
 // Import libraries
-const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const {
+	app,
+	BrowserWindow,
+	ipcMain,
+	dialog,
+	webContents,
+} = require("electron");
 const fs = require("fs");
 const needle = require("needle-db");
 
@@ -186,18 +192,17 @@ ipcMain.handle("pickOpenedDisplay", (event, callerFileIndex) => {
 	let dialog = launchWindow(
 		"./front/pickOpenedDisplay/pickOpenedDisplay.html",
 		{
-			width: 450,
+			width: 800,
 			height: 135,
-			resizable: false,
+			resizable: true, // Debug
 			fullscreenable: false,
 			webPreferences: { nodeIntegration: true, contextIsolation: false },
 		},
 	);
 	let openedDisplaysReduced = [];
-	openedDisplays.GETJSONDATA().forEach((e) => {
-		openedDisplaysReduced.push({ fileLink: e.fileLink, window: e.window.id });
+	openedDisplays.GETJSONDATA().forEach((e, i) => {
+		openedDisplaysReduced.push({ fileLink: e.fileLink, window: i });
 	});
-	console.log(openedDisplaysReduced);
 	dialog.webContents.send("loadOpenedEditors", {
 		callerWindowId: event.sender.id,
 		openedDisplays: openedDisplaysReduced,
@@ -207,8 +212,21 @@ ipcMain.handle("pickOpenedDisplay", (event, callerFileIndex) => {
 	// Handling Idea: Send the editor who called the new display and the file looking to link to the dialog, so it can call the window itself and handle the file link
 });
 
+ipcMain.on(
+	"connectWindowSelection",
+	(event, value, callerFile, CallerWindow) => {
+		webContents
+			.fromId(CallerWindow)
+			.send("syncLinkedDisplay", callerFile, value);
+	},
+);
+
 ipcMain.on("printOpenedDisplays", () => {
 	// Function for debugging
 
 	console.log(openedDisplays.GETJSONDATA());
+});
+
+ipcMain.on("restartDisplay", (event, args) => {
+	openedDisplays.READ(args, "window").webContents.reload();
 });

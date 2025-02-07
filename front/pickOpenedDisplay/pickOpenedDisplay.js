@@ -1,4 +1,4 @@
-const { ipcRenderer, webContents } = require("electron");
+const { ipcRenderer } = require("electron");
 let CallerWindow = null;
 let OpenedDisplays = null;
 let CallerEditor = null;
@@ -6,7 +6,7 @@ let CallerFile = null;
 ipcRenderer.on("loadOpenedEditors", (event, args) => {
 	CallerWindow = args.callerWindowId;
 	OpenedDisplays = args.openedDisplays;
-	CallerEditor = webContents.fromId(args.callerWindowId);
+	CallerEditor = args.callerWindowId;
 	CallerFile = args.caller;
 	OpenedDisplays.forEach((e) => {
 		const option = document.createElement("option");
@@ -24,11 +24,14 @@ document.getElementById("pickWindowBtn").addEventListener("click", () => {
 		CallerEditor != null ||
 		CallerFile != null
 	) {
-		CallerEditor.send(
-			"linkEditor",
-			document.getElementById("windowPicker").value,
-			CallerFile,
-		);
+		if (document.getElementById("windowPicker").value != "none") {
+			ipcRenderer.send(
+				"connectWindowSelection",
+				document.getElementById("windowPicker").value,
+				CallerFile,
+				CallerWindow,
+			);
+		}
 	} else {
 		alert("Missing caller argument");
 		console.log("Missing Caller Argument, variables are:");
