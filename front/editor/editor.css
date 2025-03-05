@@ -121,8 +121,7 @@ button:hover {
 	overflow: hidden;
 	white-space: pre;
 }
-
-textarea {
+#TextArea {
 	flex-grow: 1;
 	background-color: rgb(32, 32, 32);
 	color: white;
@@ -135,5 +134,10 @@ textarea {
 	resize: none;
 	overflow-y: scroll;
 	tab-size: 4;
-	white-space: pre;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	min-height: 100px; /* Ensure it has height */
+    padding: 5px;
+    overflow-wrap: break-word;
+	box-sizing: border-box;
 }

@@ -6,6 +6,7 @@ const {
 	getFileDivIdFromLink,
 	getFileNameFromLink,
 } = require("../../modules/fileStringFunctions");
+const hightlighter = require("./highlight")
 
 // Setup needle table
 
@@ -28,8 +29,7 @@ let currentFile = null;
 
 // TODO: Make a scrollbar on FileDivContainer for overflow
 
-function printOnBackConsole(args) {
-	// eslint-disable-line
+function printOnBackConsole(args) {// eslint-disable-line
 	// Debug function
 
 	ipcRenderer.send("printOnBackConsole", args);
@@ -94,7 +94,7 @@ function newFileDiv(file) {
       lcfDiv.classList.add("fileDiv");  
 
       const oldFileIndex = OpenedFiles.indexOf(lastCurrentFile)
-      cacheData[oldFileIndex] = textArea.value
+      cacheData[oldFileIndex] = textArea.innerText
 
       const Div = new FileDiv(response.file);
       Div.displayFileDiv();
@@ -107,7 +107,7 @@ function newFileDiv(file) {
 
       document.title = `${Div.fileName} - HTMLEditor`
 
-      textArea.value = response.filedata
+      textArea.innerText = response.filedata
       const fileIndex = OpenedFiles.indexOf(response.file)
       cacheData[fileIndex] = response.filedata
       updateLineNumbers();
@@ -154,7 +154,7 @@ function closeFile(file) {
 }
 
 function updateLineNumbers() {
-	const lines = textArea.value.split("\n").length;
+	const lines = textArea.innerText.split("\n").length;
 	let lineNumberContent = "";
 	for (let i = 1; i <= lines; i++) {
 		lineNumberContent += i + "\n";
@@ -166,17 +166,36 @@ textArea.addEventListener("scroll", () => {
 	lineNumbers.scrollTop = textArea.scrollTop;
 });
 
-textArea.addEventListener("input", updateLineNumbers);
-
 textArea.addEventListener("input", () => {
+	const selection = window.getSelection();
+	const range = selection.getRangeAt(0);
+	const cursorPosition = range.startOffset;
+	const scrollPosition = textArea.scrollTop;
+
+	updateLineNumbers();
+
 	OpenedFiles.SET(
 		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 		"data",
-		textArea.value,
+		textArea.innerText,
 	);
+
+	textArea.innerHTML = hightlighter(textArea.innerText)
+	//textArea.innerHTML = getCode();
+
+	const newRange = document.createRange();
+	newRange.setStart(textArea.firstChild, cursorPosition);
+	newRange.setEnd(textArea.firstChild, cursorPosition);
+	selection.removeAllRanges();
+	selection.addRange(newRange);
+	textArea.scrollTop = scrollPosition;
 });
 
 textArea.addEventListener("keydown", (event) => {
+	if (event.key === "Enter") {
+		event.preventDefault();
+		document.execCommand("insertLineBreak"); // Insert <br>
+	  }
 	if (event.key === "Tab") {
 		event.preventDefault();
 
@@ -189,6 +208,18 @@ textArea.addEventListener("keydown", (event) => {
 		textArea.selectionStart = textArea.selectionEnd = start + indent.length;
 	}
 });
+
+function getCode() {
+	let code = textArea.innerHTML;
+  
+	// Convert real <br> elements to \n
+	code = code.replace(/<br\s*\/?>/gi, "\n");
+  
+	// Convert user-typed "&lt;br&gt;" back to "<br>"
+	code = code.replace(/&lt;br\s*\/?&gt;/gi, "<br>");
+  
+	return code;
+  }
 
 ipcRenderer.on("open-editor", (event, file) => {
 	document.addEventListener("DOMContentLoaded", () => {
@@ -238,11 +269,11 @@ function loadFileIntoEditor(file) {
 		OpenedFiles.SET(
 			OpenedFiles.FINDQUICKINDEX("fileLink", lastCurrentFile),
 			"data",
-			textArea.value,
+			textArea.innerText,
 		);
 	}
 	currentFile = file;
-	textArea.value = OpenedFiles.READ(
+	textArea.innerText = OpenedFiles.READ(
 		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 		"data",
 	);
