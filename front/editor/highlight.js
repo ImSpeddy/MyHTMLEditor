@@ -11,28 +11,24 @@ module.exports = (code) => {
         highlights1.forEach(he =>{
             if(e.toUpperCase() === he){
                 // Handle case, paint red
-                console.log(e)
                 arrayedCode[i] = `<span style=\"color:rgb(255, 64, 64)\">${e}</span>`
             }
         })
         highlights2.forEach(he =>{
             if(e.toUpperCase() === he){
                 // Handle case, paint green
-                console.log(e)
                 arrayedCode[i] = `<span style=\"color:rgb(64, 255, 64)\">${e}</span>`
             }
         })
         highlights3.forEach(he =>{
             if(e.toUpperCase() === he){
                 // Handle case, paint blue
-                console.log(e)
                 arrayedCode[i] = `<span style=\"color:rgb(64, 64, 255)\">${e}</span>`
             }
         })
         highlights4.forEach(he =>{
             if(e.toUpperCase() === he){
                 // Handle case, paint yellow
-                console.log(e)
                 arrayedCode[i] = `<span style=\"color:rgb(255, 255, 64)\">${e}</span>`
             }
         })

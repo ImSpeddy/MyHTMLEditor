@@ -167,29 +167,55 @@ textArea.addEventListener("scroll", () => {
 });
 
 textArea.addEventListener("input", () => {
-	const selection = window.getSelection();
-	const range = selection.getRangeAt(0);
-	const cursorPosition = range.startOffset;
-	const scrollPosition = textArea.scrollTop;
+    const selection = window.getSelection();
+    let caretOffset = 0; // Store cursor position relative to text content
 
-	updateLineNumbers();
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const preCaretRange = range.cloneRange(); // Clone range for measurement
+        preCaretRange.selectNodeContents(textArea);
+        preCaretRange.setEnd(range.startContainer, range.startOffset);
+        caretOffset = preCaretRange.toString().length; // Get offset in characters
+    }
 
-	OpenedFiles.SET(
-		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-		"data",
-		textArea.innerText,
-	);
+    const scrollPosition = textArea.scrollTop; // Preserve scroll position
 
-	textArea.innerHTML = hightlighter(textArea.innerText)
-	//textArea.innerHTML = getCode();
+    // Update content
+    OpenedFiles.SET(
+        OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+        "data",
+        textArea.innerText,
+    );
 
-	const newRange = document.createRange();
-	newRange.setStart(textArea.firstChild, cursorPosition);
-	newRange.setEnd(textArea.firstChild, cursorPosition);
-	selection.removeAllRanges();
-	selection.addRange(newRange);
-	textArea.scrollTop = scrollPosition;
+    textArea.innerHTML = hightlighter(textArea.innerText);
+
+    // Restore cursor position
+    const newRange = document.createRange();
+    const newSelection = window.getSelection();
+    let charIndex = 0;
+    let found = false;
+
+    function setCaret(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const nextCharIndex = charIndex + node.length;
+            if (!found && caretOffset >= charIndex && caretOffset <= nextCharIndex) {
+                newRange.setStart(node, caretOffset - charIndex);
+                newRange.setEnd(node, caretOffset - charIndex);
+                found = true;
+            }
+            charIndex = nextCharIndex;
+        } else {
+            node.childNodes.forEach(setCaret);
+        }
+    }
+
+    setCaret(textArea);
+
+    newSelection.removeAllRanges();
+    newSelection.addRange(newRange);
+    textArea.scrollTop = scrollPosition; // Restore scroll position
 });
+
 
 textArea.addEventListener("keydown", (event) => {
 	if (event.key === "Enter") {
