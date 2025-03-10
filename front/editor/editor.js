@@ -315,9 +315,17 @@ document.getElementById("RefreshEditor").addEventListener("click", () => {
 			"pickOpenedDisplay",
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 		);
+	} else {
+		ipcRenderer.send(
+			"restartDisplay",
+			OpenedFiles.READ(
+				OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+				"linkedDisplay",
+			),
+		);
 	}
 });
 
-ipcRenderer.on("linkEditor", (event, display, fileID) => {
+ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 	OpenedFiles.SET(fileID, "linkedDisplay", display);
 });
