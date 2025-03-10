@@ -6,7 +6,7 @@ const {
 	getFileDivIdFromLink,
 	getFileNameFromLink,
 } = require("../../modules/fileStringFunctions");
-const hightlighter = require("./highlight")
+const highlighter = require("./highlight")
 
 // Setup needle table
 
@@ -188,7 +188,7 @@ textArea.addEventListener("input", () => {
     );
 	console.log(textArea.innerText)
 	console.log(typeof textArea.innerText)
-    textArea.innerHTML = hightlighter(textArea.innerText);
+    textArea.innerHTML = highlighter(textArea.innerText, currentFile);
 
     // Restore cursor position
     const newRange = document.createRange();
@@ -277,7 +277,7 @@ saveButton.addEventListener("click", () => {
 function loadFileIntoEditor(file) {
 	if (currentFile !== null) {
 		const lastCurrentFile = currentFile;
-		currentFile = file;
+		currentFile = file
 
 		document
 			.getElementById(getFileDivIdFromLink(lastCurrentFile))
@@ -304,6 +304,7 @@ function loadFileIntoEditor(file) {
 		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 		"data",
 	);
+	textArea.innerHTML = highlighter(textArea.innerText, currentFile);
 	updateLineNumbers();
 
 	document.title = `${getFileNameFromLink(file)} - HTMLEditor`;

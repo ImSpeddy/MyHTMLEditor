@@ -20,23 +20,35 @@ module.exports = (code, filename) => {
                 }
             })
             highlights2.forEach(he =>{
-                if(e.toUpperCase() === he){
+                if(e.toUpperCase() === he.keyword){
                     // Handle case, paint green
                     arrayedCode[i] = `<span style=\"color:rgb(64, 255, 64)\">${e}</span>`
                 }
             })
             highlights3.forEach(he =>{
-                if(e.toUpperCase() === he){
+                if(e.toUpperCase() === he.keyword){
                     // Handle case, paint blue
                     arrayedCode[i] = `<span style=\"color:rgb(64, 64, 255)\">${e}</span>`
                 }
             })
             highlights4.forEach(he =>{
-                if(e.toUpperCase() === he){
+                if(e.toUpperCase() === he.keyword){
                     // Handle case, paint yellow
                     arrayedCode[i] = `<span style=\"color:rgb(255, 255, 64)\">${e}</span>`
                 }
             })
+            highlights5.forEach(he =>{
+                if(e.toUpperCase() === he.keyword){
+                    // Handle case, paint yellow
+                    arrayedCode[i] = `<span style=\"color:rgb(86, 86, 86)\">${e}</span>`
+                    if(he.type === "comment1"){
+                        for (let index = 0; arrayedCode[i + index].includes("\n") == false; index++) {
+                            arrayedCode[i + index] = `<span style=\"color:rgb(86, 86, 86)\">${arrayedCode[i+index]}</span>`
+                        }
+                    }
+                }
+            })
+            
         })
     
         fragmentatedCode = arrayedCode.join(" ")
