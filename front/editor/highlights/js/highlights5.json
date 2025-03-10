@@ -1,0 +1,4 @@
+[
+    {"keyword": "//", "type": "comment1"},
+    {"keyword": "/*", "type": "comment2"}
+]

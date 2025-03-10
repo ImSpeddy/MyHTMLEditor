@@ -186,7 +186,8 @@ textArea.addEventListener("input", () => {
         "data",
         textArea.innerText,
     );
-
+	console.log(textArea.innerText)
+	console.log(typeof textArea.innerText)
     textArea.innerHTML = hightlighter(textArea.innerText);
 
     // Restore cursor position
@@ -265,11 +266,11 @@ ipcRenderer.on("open-editor", (event, file) => {
 const saveButton = document.getElementById("SaveBtn");
 
 saveButton.addEventListener("click", () => {
+	console.log(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile))
 	ipcRenderer.send(
 		"save-file",
 		currentFile,
-		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile)),
-		"data",
+		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile), "data"),
 	);
 });
 

@@ -1,0 +1,14 @@
+[
+    {"keyword": "=", "type": "keyword"},
+    {"keyword": "!=", "type": "keyword"},
+    {"keyword": "!==", "type": "keyword"},
+    {"keyword": "==", "type": "keyword"},
+    {"keyword": "===", "type": "keyword"},
+    {"keyword": "=>", "type": "keyword"},
+    {"keyword": "(", "type": "keyword"},
+    {"keyword": ")", "type": "keyword"},
+    {"keyword": ">=", "type": "keyword"},
+    {"keyword": "<=", "type": "keyword"},
+    {"keyword": "<", "type": "keyword"},
+    {"keyword": ">", "type": "keyword"}
+]
