@@ -186,8 +186,6 @@ textArea.addEventListener("input", () => {
         "data",
         textArea.innerText,
     );
-	console.log(textArea.innerText)
-	console.log(typeof textArea.innerText)
     textArea.innerHTML = highlighter(textArea.innerText, currentFile);
 
     // Restore cursor position
@@ -235,18 +233,6 @@ textArea.addEventListener("keydown", (event) => {
 		textArea.selectionStart = textArea.selectionEnd = start + indent.length;
 	}
 });
-
-function getCode() {
-	let code = textArea.innerHTML;
-  
-	// Convert real <br> elements to \n
-	code = code.replace(/<br\s*\/?>/gi, "\n");
-  
-	// Convert user-typed "&lt;br&gt;" back to "<br>"
-	code = code.replace(/&lt;br\s*\/?&gt;/gi, "<br>");
-  
-	return code;
-  }
 
 ipcRenderer.on("open-editor", (event, file) => {
 	document.addEventListener("DOMContentLoaded", () => {
