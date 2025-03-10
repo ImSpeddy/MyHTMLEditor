@@ -4,6 +4,7 @@
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Code Editor</title>
+		<link rel="stylesheet" href="highlighter.css">
 		<link rel="stylesheet" href="editor.css" />
 	</head>
 	<body>
@@ -15,11 +16,8 @@
 		</div>
 		<div id="TextAreaContainer">
 			<div id="lineNumbers"></div>
-			<textarea
-				id="TextArea"
-				placeholder="Write in here..."
-				autocorrect="off"
-			></textarea>
+			<div id="TextArea" contenteditable="true"></div>
+			<pre id="output"></pre>
 		</div>
 		<script src="editor.js"></script>
 	</body>

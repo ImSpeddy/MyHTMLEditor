@@ -6,6 +6,7 @@ const {
 	getFileDivIdFromLink,
 	getFileNameFromLink,
 } = require("../../modules/fileStringFunctions");
+const highlighter = require("./highlight")
 
 // Setup needle table
 
@@ -93,7 +94,7 @@ function newFileDiv(file) {
       lcfDiv.classList.add("fileDiv");  
 
       const oldFileIndex = OpenedFiles.indexOf(lastCurrentFile)
-      cacheData[oldFileIndex] = textArea.value
+      cacheData[oldFileIndex] = textArea.innerText
 
       const Div = new FileDiv(response.file);
       Div.displayFileDiv();
@@ -106,7 +107,7 @@ function newFileDiv(file) {
 
       document.title = `${Div.fileName} - HTMLEditor`
 
-      textArea.value = response.filedata
+      textArea.innerText = response.filedata
       const fileIndex = OpenedFiles.indexOf(response.file)
       cacheData[fileIndex] = response.filedata
       updateLineNumbers();
@@ -153,7 +154,7 @@ function closeFile(file) {
 }
 
 function updateLineNumbers() {
-	const lines = textArea.value.split("\n").length;
+	const lines = textArea.innerText.split("\n").length;
 	let lineNumberContent = "";
 	for (let i = 1; i <= lines; i++) {
 		lineNumberContent += i + "\n";
@@ -165,17 +166,61 @@ textArea.addEventListener("scroll", () => {
 	lineNumbers.scrollTop = textArea.scrollTop;
 });
 
-textArea.addEventListener("input", updateLineNumbers);
-
 textArea.addEventListener("input", () => {
-	OpenedFiles.SET(
-		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-		"data",
-		textArea.value,
-	);
+    const selection = window.getSelection();
+    let caretOffset = 0; // Store cursor position relative to text content
+
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const preCaretRange = range.cloneRange(); // Clone range for measurement
+        preCaretRange.selectNodeContents(textArea);
+        preCaretRange.setEnd(range.startContainer, range.startOffset);
+        caretOffset = preCaretRange.toString().length; // Get offset in characters
+    }
+
+    const scrollPosition = textArea.scrollTop; // Preserve scroll position
+
+    // Update content
+    OpenedFiles.SET(
+        OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+        "data",
+        textArea.innerText,
+    );
+    textArea.innerHTML = highlighter(textArea.innerText, currentFile);
+
+    // Restore cursor position
+    const newRange = document.createRange();
+    const newSelection = window.getSelection();
+    let charIndex = 0;
+    let found = false;
+
+    function setCaret(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            const nextCharIndex = charIndex + node.length;
+            if (!found && caretOffset >= charIndex && caretOffset <= nextCharIndex) {
+                newRange.setStart(node, caretOffset - charIndex);
+                newRange.setEnd(node, caretOffset - charIndex);
+                found = true;
+            }
+            charIndex = nextCharIndex;
+        } else {
+            node.childNodes.forEach(setCaret);
+        }
+    }
+
+    setCaret(textArea);
+
+    newSelection.removeAllRanges();
+    newSelection.addRange(newRange);
+    textArea.scrollTop = scrollPosition; // Restore scroll position
 });
 
+
 textArea.addEventListener("keydown", (event) => {
+	if (event.key === "Enter") {
+		event.preventDefault();
+		document.execCommand("insertLineBreak"); // Insert <br>
+	  }
 	if (event.key === "Tab") {
 		event.preventDefault();
 
@@ -207,20 +252,18 @@ ipcRenderer.on("open-editor", (event, file) => {
 const saveButton = document.getElementById("SaveBtn");
 
 saveButton.addEventListener("click", () => {
+	console.log(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile))
 	ipcRenderer.send(
 		"save-file",
 		currentFile,
-		OpenedFiles.READ(
-			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-			"data",
-		),
+		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile), "data"),
 	);
 });
 
 function loadFileIntoEditor(file) {
 	if (currentFile !== null) {
 		const lastCurrentFile = currentFile;
-		currentFile = file;
+		currentFile = file
 
 		document
 			.getElementById(getFileDivIdFromLink(lastCurrentFile))
@@ -239,14 +282,15 @@ function loadFileIntoEditor(file) {
 		OpenedFiles.SET(
 			OpenedFiles.FINDQUICKINDEX("fileLink", lastCurrentFile),
 			"data",
-			textArea.value,
+			textArea.innerText,
 		);
 	}
 	currentFile = file;
-	textArea.value = OpenedFiles.READ(
+	textArea.innerText = OpenedFiles.READ(
 		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 		"data",
 	);
+	textArea.innerHTML = highlighter(textArea.innerText, currentFile);
 	updateLineNumbers();
 
 	document.title = `${getFileNameFromLink(file)} - HTMLEditor`;
