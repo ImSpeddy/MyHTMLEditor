@@ -31,7 +31,7 @@ createBtn.addEventListener("click", () => {
 	const args = {
 		name: document.getElementById("filenameField").value,
 		dir: dir,
-		preset: document.getElementById("presetPicker").value,
+		preset: document.getElementById("presetPicker").value
 	};
 
 	if (args.dir == null || args.name == null || args.preset == null) {

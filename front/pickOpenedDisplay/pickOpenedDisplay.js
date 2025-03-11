@@ -29,7 +29,7 @@ document.getElementById("pickWindowBtn").addEventListener("click", () => {
 				"connectWindowSelection",
 				document.getElementById("windowPicker").value,
 				CallerFile,
-				CallerWindow,
+				CallerWindow
 			);
 		}
 	} else {
