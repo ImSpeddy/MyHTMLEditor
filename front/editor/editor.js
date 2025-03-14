@@ -86,6 +86,14 @@ function openFile(file, callback) {
 
 function closeFile(file) {
 	// TODO: Handle case if file is not saved
+	let savedData
+	ipcRenderer.invoke("get-file-data", file).then((response) => {
+		savedData = response;
+	})
+
+	if(OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") != savedData){
+		alert("File not saved");
+	}
 
 	const div = document.getElementById(getFileDivIdFromLink(file));
 
@@ -96,9 +104,7 @@ function closeFile(file) {
 		ipcRenderer.send("closeWindow");
 	}else{
 		if(currentFile == file){
-			console.log(OpenedFiles.GETJSONDATA());
 			const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
-			console.log(nextFile)
 			loadFileIntoEditor(nextFile);
 		}
 	}
@@ -202,7 +208,6 @@ ipcRenderer.on("open-editor", (event, file) => {
 const saveButton = document.getElementById("SaveBtn");
 
 saveButton.addEventListener("click", () => {
-	console.log(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile));
 	ipcRenderer.send(
 		"save-file",
 		currentFile,
