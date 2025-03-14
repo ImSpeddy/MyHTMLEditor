@@ -137,7 +137,7 @@ button:hover {
 	white-space: pre-wrap;
 	word-wrap: break-word;
 	min-height: 100px; /* Ensure it has height */
-    padding: 5px;
-    overflow-wrap: break-word;
+	padding: 5px;
+	overflow-wrap: break-word;
 	box-sizing: border-box;
 }

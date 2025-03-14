@@ -25,5 +25,5 @@ function getFileDivIdFromLink(file) {
 module.exports = {
 	getFileDirFromLink,
 	getFileDivIdFromLink,
-	getFileNameFromLink,
+	getFileNameFromLink
 };

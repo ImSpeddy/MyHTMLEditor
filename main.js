@@ -4,7 +4,7 @@ const {
 	BrowserWindow,
 	ipcMain,
 	dialog,
-	webContents,
+	webContents
 } = require("electron");
 const fs = require("fs");
 const needle = require("needle-db");
@@ -28,8 +28,8 @@ const createWindow = () => {
 		fullscreenable: false,
 		webPreferences: {
 			nodeIntegration: true,
-			contextIsolation: false,
-		},
+			contextIsolation: false
+		}
 	});
 
 	window.on("closed", () => {
@@ -50,7 +50,7 @@ app.on("window-all-closed", () => {
 ipcMain.on("new-window", async () => {
 	const result = await dialog.showOpenDialog({
 		properties: ["openFile"],
-		filters: [{ name: "HTML Files", extensions: ["html"] }],
+		filters: [{ name: "HTML Files", extensions: ["html"] }]
 	});
 	if (!result.canceled && result.filePaths && result.filePaths[0]) {
 		const newWdwFMT = openedDisplays.FORMAT();
@@ -58,7 +58,7 @@ ipcMain.on("new-window", async () => {
 		newWdwFMT.SET("fileLink", result.filePaths[0]);
 		newWdwFMT.SET(
 			"window",
-			launchWindow(result.filePaths[0], { width: 500, height: 500 }),
+			launchWindow(result.filePaths[0], { width: 500, height: 500 })
 		);
 
 		openedDisplays.PUSH(newWdwFMT);
@@ -66,7 +66,7 @@ ipcMain.on("new-window", async () => {
 		openedDisplays
 			.READ(
 				openedDisplays.FINDQUICKINDEX("fileLink", result.filePaths[0]),
-				"window",
+				"window"
 			)
 			.webContents.on("destroyed", () => {
 				// Handle window closed
@@ -80,15 +80,15 @@ ipcMain.on("new-editor", async () => {
 		filters: [
 			{
 				name: "Web development files",
-				extensions: ["html", "css", "js", "json"],
-			},
-		],
+				extensions: ["html", "htm", "mjs", "cjs", "jsx", "ts", "css", "js", "json", "tsx", "md", "txt", "php", "xml"]
+			}
+		]
 	});
 	if (!result.canceled && result.filePaths && result.filePaths[0]) {
 		let editWindow = launchWindow("./front/editor/editor.html", {
 			width: 500,
 			height: 500,
-			webPreferences: { nodeIntegration: true, contextIsolation: false },
+			webPreferences: { nodeIntegration: true, contextIsolation: false }
 		});
 		editWindow.webContents.send("open-editor", result.filePaths[0]);
 	}
@@ -110,9 +110,9 @@ ipcMain.handle("filePickerDialog", async () => {
 		filters: [
 			{
 				name: "Web development files",
-				extensions: ["html", "css", "js", "json"],
-			},
-		],
+				extensions: ["html", "htm", "mjs", "cjs", "jsx", "ts", "css", "js", "json", "tsx", "md", "txt", "php", "xml"]
+			}
+		]
 	});
 	return result.filePaths[0];
 });
@@ -125,14 +125,14 @@ ipcMain.on("new-file-wdw", () => {
 		fullscreenable: false,
 		webPreferences: {
 			nodeIntegration: true,
-			contextIsolation: false,
-		},
+			contextIsolation: false
+		}
 	});
 });
 
 ipcMain.handle("get-dir", async () => {
 	const result = await dialog.showOpenDialog({
-		properties: ["openDirectory"],
+		properties: ["openDirectory"]
 	});
 
 	if (result.canceled == false && result.filePaths.length == 1) {
@@ -176,7 +176,7 @@ ipcMain.handle("createFile", (event, args) => {
 
 ipcMain.on("closeWindow", (event) => {
 	const senderWindow = BrowserWindow.getAllWindows().find(
-		(win) => win.webContents === event.sender,
+		(win) => win.webContents === event.sender
 	);
 
 	if (senderWindow) {
@@ -196,8 +196,8 @@ ipcMain.handle("pickOpenedDisplay", (event, callerFileIndex) => {
 			height: 135,
 			resizable: true, // Debug
 			fullscreenable: false,
-			webPreferences: { nodeIntegration: true, contextIsolation: false },
-		},
+			webPreferences: { nodeIntegration: true, contextIsolation: false }
+		}
 	);
 	let openedDisplaysReduced = [];
 	openedDisplays.GETJSONDATA().forEach((e, i) => {
@@ -206,7 +206,7 @@ ipcMain.handle("pickOpenedDisplay", (event, callerFileIndex) => {
 	dialog.webContents.send("loadOpenedEditors", {
 		callerWindowId: event.sender.id,
 		openedDisplays: openedDisplaysReduced,
-		caller: callerFileIndex,
+		caller: callerFileIndex
 	});
 
 	// Handling Idea: Send the editor who called the new display and the file looking to link to the dialog, so it can call the window itself and handle the file link
@@ -218,7 +218,7 @@ ipcMain.on(
 		webContents
 			.fromId(CallerWindow)
 			.send("syncLinkedDisplay", callerFile, value);
-	},
+	}
 );
 
 ipcMain.on("printOpenedDisplays", () => {

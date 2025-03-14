@@ -4,9 +4,9 @@ const lineNumbers = document.getElementById("lineNumbers");
 const {
 	getFileDirFromLink,
 	getFileDivIdFromLink,
-	getFileNameFromLink,
+	getFileNameFromLink
 } = require("../../modules/fileStringFunctions");
-const highlighter = require("./highlight")
+const highlighter = require("./highlight");
 
 // Setup needle table
 
@@ -29,7 +29,8 @@ let currentFile = null;
 
 // TODO: Make a scrollbar on FileDivContainer for overflow
 
-function printOnBackConsole(args) {// eslint-disable-line
+// prettier-ignore
+function printOnBackConsole(args) { // eslint-disable-line
 	// Debug function
 
 	ipcRenderer.send("printOnBackConsole", args);
@@ -167,60 +168,59 @@ textArea.addEventListener("scroll", () => {
 });
 
 textArea.addEventListener("input", () => {
-    const selection = window.getSelection();
-    let caretOffset = 0; // Store cursor position relative to text content
+	const selection = window.getSelection();
+	let caretOffset = 0; // Store cursor position relative to text content
 
-    if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const preCaretRange = range.cloneRange(); // Clone range for measurement
-        preCaretRange.selectNodeContents(textArea);
-        preCaretRange.setEnd(range.startContainer, range.startOffset);
-        caretOffset = preCaretRange.toString().length; // Get offset in characters
-    }
+	if (selection.rangeCount > 0) {
+		const range = selection.getRangeAt(0);
+		const preCaretRange = range.cloneRange(); // Clone range for measurement
+		preCaretRange.selectNodeContents(textArea);
+		preCaretRange.setEnd(range.startContainer, range.startOffset);
+		caretOffset = preCaretRange.toString().length; // Get offset in characters
+	}
 
-    const scrollPosition = textArea.scrollTop; // Preserve scroll position
+	const scrollPosition = textArea.scrollTop; // Preserve scroll position
 
-    // Update content
-    OpenedFiles.SET(
-        OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-        "data",
-        textArea.innerText,
-    );
-    textArea.innerHTML = highlighter(textArea.innerText, currentFile);
+	// Update content
+	OpenedFiles.SET(
+		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+		"data",
+		textArea.innerText
+	);
+	textArea.innerHTML = highlighter(textArea.innerText, currentFile);
 
-    // Restore cursor position
-    const newRange = document.createRange();
-    const newSelection = window.getSelection();
-    let charIndex = 0;
-    let found = false;
+	// Restore cursor position
+	const newRange = document.createRange();
+	const newSelection = window.getSelection();
+	let charIndex = 0;
+	let found = false;
 
-    function setCaret(node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-            const nextCharIndex = charIndex + node.length;
-            if (!found && caretOffset >= charIndex && caretOffset <= nextCharIndex) {
-                newRange.setStart(node, caretOffset - charIndex);
-                newRange.setEnd(node, caretOffset - charIndex);
-                found = true;
-            }
-            charIndex = nextCharIndex;
-        } else {
-            node.childNodes.forEach(setCaret);
-        }
-    }
+	function setCaret(node) {
+		if (node.nodeType === Node.TEXT_NODE) {
+			const nextCharIndex = charIndex + node.length;
+			if (!found && caretOffset >= charIndex && caretOffset <= nextCharIndex) {
+				newRange.setStart(node, caretOffset - charIndex);
+				newRange.setEnd(node, caretOffset - charIndex);
+				found = true;
+			}
+			charIndex = nextCharIndex;
+		} else {
+			node.childNodes.forEach(setCaret);
+		}
+	}
 
-    setCaret(textArea);
+	setCaret(textArea);
 
-    newSelection.removeAllRanges();
-    newSelection.addRange(newRange);
-    textArea.scrollTop = scrollPosition; // Restore scroll position
+	newSelection.removeAllRanges();
+	newSelection.addRange(newRange);
+	textArea.scrollTop = scrollPosition; // Restore scroll position
 });
-
 
 textArea.addEventListener("keydown", (event) => {
 	if (event.key === "Enter") {
 		event.preventDefault();
 		document.execCommand("insertLineBreak"); // Insert <br>
-	  }
+	}
 	if (event.key === "Tab") {
 		event.preventDefault();
 
@@ -252,18 +252,21 @@ ipcRenderer.on("open-editor", (event, file) => {
 const saveButton = document.getElementById("SaveBtn");
 
 saveButton.addEventListener("click", () => {
-	console.log(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile))
+	console.log(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile));
 	ipcRenderer.send(
 		"save-file",
 		currentFile,
-		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile), "data"),
+		OpenedFiles.READ(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"data"
+		)
 	);
 });
 
 function loadFileIntoEditor(file) {
 	if (currentFile !== null) {
 		const lastCurrentFile = currentFile;
-		currentFile = file
+		currentFile = file;
 
 		document
 			.getElementById(getFileDivIdFromLink(lastCurrentFile))
@@ -282,13 +285,13 @@ function loadFileIntoEditor(file) {
 		OpenedFiles.SET(
 			OpenedFiles.FINDQUICKINDEX("fileLink", lastCurrentFile),
 			"data",
-			textArea.innerText,
+			textArea.innerText
 		);
 	}
 	currentFile = file;
 	textArea.innerText = OpenedFiles.READ(
 		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-		"data",
+		"data"
 	);
 	textArea.innerHTML = highlighter(textArea.innerText, currentFile);
 	updateLineNumbers();
@@ -308,20 +311,20 @@ document.getElementById("RefreshEditor").addEventListener("click", () => {
 	if (
 		OpenedFiles.READ(
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-			"linkedDisplay",
+			"linkedDisplay"
 		) == null
 	) {
 		ipcRenderer.invoke(
 			"pickOpenedDisplay",
-			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile)
 		);
 	} else {
 		ipcRenderer.send(
 			"restartDisplay",
 			OpenedFiles.READ(
 				OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-				"linkedDisplay",
-			),
+				"linkedDisplay"
+			)
 		);
 	}
 });
