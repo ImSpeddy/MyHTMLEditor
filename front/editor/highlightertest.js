@@ -1,3 +1,0 @@
-require("./highlight")(
-	"const jdbalsdaldhalsdj = djaspdjasd\nfunctionsa function ;"
-);

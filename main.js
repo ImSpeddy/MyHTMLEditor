@@ -80,7 +80,7 @@ ipcMain.on("new-editor", async () => {
 		filters: [
 			{
 				name: "Web development files",
-				extensions: ["html", "css", "js", "json"]
+				extensions: ["html", "htm", "mjs", "cjs", "jsx", "ts", "css", "js", "json", "tsx", "md", "txt", "php", "xml"]
 			}
 		]
 	});
@@ -110,7 +110,7 @@ ipcMain.handle("filePickerDialog", async () => {
 		filters: [
 			{
 				name: "Web development files",
-				extensions: ["html", "css", "js", "json"]
+				extensions: ["html", "htm", "mjs", "cjs", "jsx", "ts", "css", "js", "json", "tsx", "md", "txt", "php", "xml"]
 			}
 		]
 	});
