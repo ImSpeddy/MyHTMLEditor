@@ -36,7 +36,7 @@ function printOnBackConsole(args) { // eslint-disable-line
 	ipcRenderer.send("printOnBackConsole", args);
 }
 
-function newFileDiv(file) {
+async function newFileDiv(file) {
 	const fileDiv = document.createElement("div");
 	fileDiv.classList.add("fileDiv");
 	fileDiv.id = getFileDivIdFromLink(file);
@@ -53,8 +53,8 @@ function newFileDiv(file) {
 	fileDivBtn.classList.add("fileDivBtn");
 	fileDivBtn.textContent = "X";
 
-	fileDivBtn.addEventListener("click", () => {
-		closeFile(file);
+	fileDivBtn.addEventListener("click", async() => {
+		await closeFile(file);
 	});
 
 	fileDiv.appendChild(fileDivText);
@@ -84,29 +84,69 @@ function openFile(file, callback) {
 	}
 }
 
-function closeFile(file) {
+async function closeFile(file) {
 	// TODO: Handle case if file is not saved
 	let savedData
-	ipcRenderer.invoke("get-file-data", file).then((response) => {
+	await ipcRenderer.invoke("get-file-data", file).then((response) => {
 		savedData = response;
 	})
 
+	console.log(OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") != savedData)
+
 	if(OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") != savedData){
-		alert("File not saved");
-	}
+		
+		const div = document.getElementById(getFileDivIdFromLink(file));
+		const dialog = document.getElementById("saveDialog");
+		dialog.showModal()
 
-	const div = document.getElementById(getFileDivIdFromLink(file));
+		const saveButton = document.getElementById("saveButtonDialog");
+		const dontSaveButton = document.getElementById("notSaveButtonDialog");
+		const cancelButton = document.getElementById("cancelSaveButtonDialog");
 
-	div.remove();
-	OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+		cancelButton.addEventListener('click', ()=>{
+			dialog.close();
+		})
 
-	if(OpenedFiles.GETJSONDATA().length == 0){
-		ipcRenderer.send("closeWindow");
-	}else{
-		if(currentFile == file){
-			const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
-			loadFileIntoEditor(nextFile);
-		}
+		dontSaveButton.addEventListener('click', ()=>{
+			OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+			div.remove();
+			dialog.close()
+		
+			if(OpenedFiles.GETJSONDATA().length == 0){
+				ipcRenderer.send("closeWindow");
+			}else{
+				if(currentFile == file){
+					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
+					loadFileIntoEditor(nextFile);
+				}
+			}
+		})
+
+		saveButton.addEventListener('click', ()=>{
+			//TODO: HANDLE SAVE
+
+			ipcRenderer.send(
+				"save-file",
+				file,
+				OpenedFiles.READ(
+					OpenedFiles.FINDQUICKINDEX("fileLink", file),
+					"data"
+				)
+			);
+
+			OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+			div.remove();
+			dialog.close();
+		
+			if(OpenedFiles.GETJSONDATA().length == 0){
+				ipcRenderer.send("closeWindow");
+			}else{
+				if(currentFile == file){
+					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
+					loadFileIntoEditor(nextFile);
+				}
+			}
+		})
 	}
 }
 
@@ -294,4 +334,13 @@ document.getElementById("RefreshEditor").addEventListener("click", () => {
 
 ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 	OpenedFiles.SET(fileID, "linkedDisplay", display);
+});
+
+window.addEventListener("beforeunload", (event) => {
+	if(OpenedFiles.GETJSONDATA().length > 0){
+		event.preventDefault();
+		OpenedFiles.GETJSONDATA().forEach((e)=>{
+			closeFile(e.fileLink)
+		})
+	}
 });
