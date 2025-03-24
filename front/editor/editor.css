@@ -18,6 +18,12 @@ body {
 	width: calc(100% - 1%);
 	box-sizing: border-box;
 	border-radius: 5px;
+	scrollbar-width: thin;
+}
+
+#FilePicker {
+	overflow-y: hidden;
+	overflow-x: auto;
 }
 
 .fileDiv {
@@ -83,7 +89,7 @@ button {
 	color: black;
 	padding: 5px 10px;
 	border-radius: 5px;
-	border: 0px ridge black;
+	border: 1px ridge black;
 	font-size: 16px;
 	font-weight: bold;
 	cursor: pointer;
@@ -132,7 +138,8 @@ button:hover {
 	border: none;
 	outline: none;
 	resize: none;
-	overflow-y: scroll;
+	overflow: auto;
+	scrollbar-width: thin;
 	tab-size: 4;
 	white-space: pre-wrap;
 	word-wrap: break-word;
@@ -140,4 +147,15 @@ button:hover {
 	padding: 5px;
 	overflow-wrap: break-word;
 	box-sizing: border-box;
+}
+
+#saveDialog {
+	background-color: rgb(48, 48, 48);
+}
+
+#saveDialogText {
+	font-family: Arial;
+	font-weight: bold;
+	color: white;
+	justify-content: center;
 }

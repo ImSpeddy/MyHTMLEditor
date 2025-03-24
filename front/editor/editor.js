@@ -36,7 +36,7 @@ function printOnBackConsole(args) { // eslint-disable-line
 	ipcRenderer.send("printOnBackConsole", args);
 }
 
-function newFileDiv(file) {
+async function newFileDiv(file) {
 	const fileDiv = document.createElement("div");
 	fileDiv.classList.add("fileDiv");
 	fileDiv.id = getFileDivIdFromLink(file);
@@ -53,74 +53,14 @@ function newFileDiv(file) {
 	fileDivBtn.classList.add("fileDivBtn");
 	fileDivBtn.textContent = "X";
 
-	fileDivBtn.addEventListener("click", () => {
-		closeFile(file);
-		/* TODO:
-      fileDiv.remove();
-      let idx = null
-      OpenedFile.forEach((element, index) => {
-
-        if(element.file == this.file){
-
-            idx = index
-
-        }
-
-      });
-      if (idx > -1) {
-          OpenedFiles.splice(idx, 1);
-        }
-      if(OpenedFiles.length == 0){
-          window.close()
-      }
-    */
+	fileDivBtn.addEventListener("click", async() => {
+		await closeFile(file);
 	});
 
 	fileDiv.appendChild(fileDivText);
 	fileDiv.appendChild(fileDivBtn);
 	document.getElementById("FilePicker").appendChild(fileDiv);
 }
-
-/*
-
-  DELETE AFTER OPENFILE FUNCTION IS DONE
-
-    ipcRenderer.invoke('open-file').then((response)=>{
-
-    if(!response.status == -1){
-
-      const lastCurrentFile = currentFile
-      const lcfDiv = document.getElementById(`filediv-${lastCurrentFile}`)
-      lcfDiv.classList.remove("curFileDiv");
-      lcfDiv.classList.add("fileDiv");  
-
-      const oldFileIndex = OpenedFiles.indexOf(lastCurrentFile)
-      cacheData[oldFileIndex] = textArea.innerText
-
-      const Div = new FileDiv(response.file);
-      Div.displayFileDiv();
-      currentFile = response.file
-      OpenedFiles.push(response.file)
-
-      const cfDiv = document.getElementById(`filediv-${response.file}`)
-      cfDiv.classList.add("curFileDiv");
-      cfDiv.classList.remove("fileDiv");
-
-      document.title = `${Div.fileName} - HTMLEditor`
-
-      textArea.innerText = response.filedata
-      const fileIndex = OpenedFiles.indexOf(response.file)
-      cacheData[fileIndex] = response.filedata
-      updateLineNumbers();
-
-    }else{
-
-      alert("Error in opening file.")
-
-    }
-  })
-
-*/
 
 function openFile(file, callback) {
 	if (OpenedFiles.FINDQUICKINDEX("fileLink", file) === -1) {
@@ -144,14 +84,70 @@ function openFile(file, callback) {
 	}
 }
 
-function closeFile(file) {
-	// TODO: Handle current file closing case
+async function closeFile(file) {
 	// TODO: Handle case if file is not saved
+	let savedData
+	await ipcRenderer.invoke("get-file-data", file).then((response) => {
+		savedData = response;
+	})
 
-	const div = getFileDivIdFromLink(file);
+	console.log(OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") != savedData)
 
-	div.remove();
-	OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+	if(OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") != savedData){
+		
+		const div = document.getElementById(getFileDivIdFromLink(file));
+		const dialog = document.getElementById("saveDialog");
+		dialog.showModal()
+
+		const saveButton = document.getElementById("saveButtonDialog");
+		const dontSaveButton = document.getElementById("notSaveButtonDialog");
+		const cancelButton = document.getElementById("cancelSaveButtonDialog");
+
+		cancelButton.addEventListener('click', ()=>{
+			dialog.close();
+		})
+
+		dontSaveButton.addEventListener('click', ()=>{
+			OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+			div.remove();
+			dialog.close()
+		
+			if(OpenedFiles.GETJSONDATA().length == 0){
+				ipcRenderer.send("closeWindow");
+			}else{
+				if(currentFile == file){
+					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
+					loadFileIntoEditor(nextFile);
+				}
+			}
+		})
+
+		saveButton.addEventListener('click', ()=>{
+			//TODO: HANDLE SAVE
+
+			ipcRenderer.send(
+				"save-file",
+				file,
+				OpenedFiles.READ(
+					OpenedFiles.FINDQUICKINDEX("fileLink", file),
+					"data"
+				)
+			);
+
+			OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+			div.remove();
+			dialog.close();
+		
+			if(OpenedFiles.GETJSONDATA().length == 0){
+				ipcRenderer.send("closeWindow");
+			}else{
+				if(currentFile == file){
+					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
+					loadFileIntoEditor(nextFile);
+				}
+			}
+		})
+	}
 }
 
 function updateLineNumbers() {
@@ -252,7 +248,6 @@ ipcRenderer.on("open-editor", (event, file) => {
 const saveButton = document.getElementById("SaveBtn");
 
 saveButton.addEventListener("click", () => {
-	console.log(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile));
 	ipcRenderer.send(
 		"save-file",
 		currentFile,
@@ -264,39 +259,47 @@ saveButton.addEventListener("click", () => {
 });
 
 function loadFileIntoEditor(file) {
-	if (currentFile !== null) {
-		const lastCurrentFile = currentFile;
+	if(document.getElementById(getFileDivIdFromLink(file))){
+		if (currentFile !== null) {
+			const lastCurrentFile = currentFile;
+			currentFile = file;
+
+			if(document.getElementById(getFileDivIdFromLink(lastCurrentFile))){
+				document
+				.getElementById(getFileDivIdFromLink(lastCurrentFile))
+				.classList.remove("curFileDiv");
+
+				document
+				.getElementById(getFileDivIdFromLink(lastCurrentFile))
+				.classList.add("fileDiv");
+			}
+			
+			document
+				.getElementById(getFileDivIdFromLink(currentFile))
+				.classList.add("curFileDiv");
+			document
+				.getElementById(getFileDivIdFromLink(currentFile))
+				.classList.remove("fileDiv");
+			
+			if(document.getElementById(getFileDivIdFromLink(lastCurrentFile))){
+				OpenedFiles.SET(
+					OpenedFiles.FINDQUICKINDEX("fileLink", lastCurrentFile),
+					"data",
+					textArea.innerText
+				);
+			}
+
+		}
 		currentFile = file;
-
-		document
-			.getElementById(getFileDivIdFromLink(lastCurrentFile))
-			.classList.remove("curFileDiv");
-		document
-			.getElementById(getFileDivIdFromLink(lastCurrentFile))
-			.classList.add("fileDiv");
-
-		document
-			.getElementById(getFileDivIdFromLink(currentFile))
-			.classList.add("curFileDiv");
-		document
-			.getElementById(getFileDivIdFromLink(currentFile))
-			.classList.remove("fileDiv");
-
-		OpenedFiles.SET(
-			OpenedFiles.FINDQUICKINDEX("fileLink", lastCurrentFile),
-			"data",
-			textArea.innerText
+		textArea.innerText = OpenedFiles.READ(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"data"
 		);
-	}
-	currentFile = file;
-	textArea.innerText = OpenedFiles.READ(
-		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-		"data"
-	);
-	textArea.innerHTML = highlighter(textArea.innerText, currentFile);
-	updateLineNumbers();
+		textArea.innerHTML = highlighter(textArea.innerText, currentFile);
+		updateLineNumbers();
 
-	document.title = `${getFileNameFromLink(file)} - HTMLEditor`;
+		document.title = `${getFileNameFromLink(file)} - HTMLEditor`;
+	}
 }
 
 document.getElementById("openFile").addEventListener("click", () => {
@@ -331,4 +334,13 @@ document.getElementById("RefreshEditor").addEventListener("click", () => {
 
 ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 	OpenedFiles.SET(fileID, "linkedDisplay", display);
+});
+
+window.addEventListener("beforeunload", (event) => {
+	if(OpenedFiles.GETJSONDATA().length > 0){
+		event.preventDefault();
+		OpenedFiles.GETJSONDATA().forEach((e)=>{
+			closeFile(e.fileLink)
+		})
+	}
 });
