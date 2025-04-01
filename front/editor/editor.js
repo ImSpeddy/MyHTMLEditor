@@ -5,34 +5,31 @@ const {
 	getFileDirFromLink,
 	getFileDivIdFromLink,
 	getFileNameFromLink
-} = require("../../modules/fileStringFunctions");
+} = require("./modules/fileStringFunctions");
 const highlighter = require("./highlight");
 
 // Setup needle table
-
 // Import Library
 const needle = require("needle-db");
-
 // Setup Table
 let OpenedFiles = new needle();
-
 // Setup Table Columns
-
 OpenedFiles.NEWCOLUMN("fileLink"); // E:\\example\\example.js
 OpenedFiles.NEWCOLUMN("fileName"); // example.js
 OpenedFiles.NEWCOLUMN("fileDir"); // E:\\example
 OpenedFiles.NEWCOLUMN("linkedDisplay");
 OpenedFiles.NEWCOLUMN("data");
 OpenedFiles.NEWCOLUMN("fileDivId");
+OpenedFiles.NEWCOLUMN("savedScroll");
+OpenedFiles.NEWCOLUMN("savedCursor");
+
+const { getCaretPosition, setCaretPosition } = require("./modules/caret");
 
 let currentFile = null;
-
-// TODO: Make a scrollbar on FileDivContainer for overflow
 
 // prettier-ignore
 function printOnBackConsole(args) { // eslint-disable-line
 	// Debug function
-
 	ipcRenderer.send("printOnBackConsole", args);
 }
 
@@ -53,7 +50,7 @@ async function newFileDiv(file) {
 	fileDivBtn.classList.add("fileDivBtn");
 	fileDivBtn.textContent = "X";
 
-	fileDivBtn.addEventListener("click", async() => {
+	fileDivBtn.addEventListener("click", async () => {
 		await closeFile(file);
 	});
 
@@ -70,6 +67,8 @@ function openFile(file, callback) {
 		fileFMT.SET("fileDir", getFileDirFromLink(file));
 		fileFMT.SET("linkedDisplay", null);
 		fileFMT.SET("fileDivId", getFileDivIdFromLink(file));
+		fileFMT.SET("savedScroll", null);
+		fileFMT.SET("savedCursor", null);
 
 		newFileDiv(file);
 
@@ -85,68 +84,76 @@ function openFile(file, callback) {
 }
 
 async function closeFile(file) {
-	// TODO: Handle case if file is not saved
-	let savedData
+	let savedData;
 	await ipcRenderer.invoke("get-file-data", file).then((response) => {
 		savedData = response;
-	})
+	});
 
-	console.log(OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") != savedData)
-
-	if(OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") != savedData){
-		
+	if (
+		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") !==
+		savedData
+	) {
 		const div = document.getElementById(getFileDivIdFromLink(file));
 		const dialog = document.getElementById("saveDialog");
-		dialog.showModal()
+		dialog.showModal();
 
 		const saveButton = document.getElementById("saveButtonDialog");
 		const dontSaveButton = document.getElementById("notSaveButtonDialog");
 		const cancelButton = document.getElementById("cancelSaveButtonDialog");
 
-		cancelButton.addEventListener('click', ()=>{
+		cancelButton.addEventListener("click", () => {
 			dialog.close();
-		})
+		});
 
-		dontSaveButton.addEventListener('click', ()=>{
+		dontSaveButton.addEventListener("click", () => {
 			OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
 			div.remove();
-			dialog.close()
-		
-			if(OpenedFiles.GETJSONDATA().length == 0){
+			dialog.close();
+
+			if (OpenedFiles.GETJSONDATA().length === 0) {
 				ipcRenderer.send("closeWindow");
-			}else{
-				if(currentFile == file){
+			} else {
+				if (currentFile === file) {
 					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
 					loadFileIntoEditor(nextFile);
 				}
 			}
-		})
+		});
 
-		saveButton.addEventListener('click', ()=>{
-			//TODO: HANDLE SAVE
-
+		saveButton.addEventListener("click", () => {
 			ipcRenderer.send(
 				"save-file",
 				file,
-				OpenedFiles.READ(
-					OpenedFiles.FINDQUICKINDEX("fileLink", file),
-					"data"
-				)
+				OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data")
 			);
 
 			OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
 			div.remove();
 			dialog.close();
-		
-			if(OpenedFiles.GETJSONDATA().length == 0){
+
+			if (OpenedFiles.GETJSONDATA().length === 0) {
 				ipcRenderer.send("closeWindow");
-			}else{
-				if(currentFile == file){
+			} else {
+				if (currentFile === file) {
 					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
 					loadFileIntoEditor(nextFile);
 				}
 			}
-		})
+		});
+	} else {
+		OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+
+		const div = document.getElementById(getFileDivIdFromLink(file));
+		div.remove();
+
+		if (OpenedFiles.GETJSONDATA().length === 0) {
+			ipcRenderer.send("closeWindow");
+		} else {
+			if (currentFile === file) {
+				const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
+				loadFileIntoEditor(nextFile);
+			}
+		}
 	}
 }
 
@@ -164,18 +171,8 @@ textArea.addEventListener("scroll", () => {
 });
 
 textArea.addEventListener("input", () => {
-	const selection = window.getSelection();
-	let caretOffset = 0; // Store cursor position relative to text content
-
-	if (selection.rangeCount > 0) {
-		const range = selection.getRangeAt(0);
-		const preCaretRange = range.cloneRange(); // Clone range for measurement
-		preCaretRange.selectNodeContents(textArea);
-		preCaretRange.setEnd(range.startContainer, range.startOffset);
-		caretOffset = preCaretRange.toString().length; // Get offset in characters
-	}
-
 	const scrollPosition = textArea.scrollTop; // Preserve scroll position
+	const caretOffset = getCaretPosition();
 
 	// Update content
 	OpenedFiles.SET(
@@ -186,29 +183,7 @@ textArea.addEventListener("input", () => {
 	textArea.innerHTML = highlighter(textArea.innerText, currentFile);
 
 	// Restore cursor position
-	const newRange = document.createRange();
-	const newSelection = window.getSelection();
-	let charIndex = 0;
-	let found = false;
-
-	function setCaret(node) {
-		if (node.nodeType === Node.TEXT_NODE) {
-			const nextCharIndex = charIndex + node.length;
-			if (!found && caretOffset >= charIndex && caretOffset <= nextCharIndex) {
-				newRange.setStart(node, caretOffset - charIndex);
-				newRange.setEnd(node, caretOffset - charIndex);
-				found = true;
-			}
-			charIndex = nextCharIndex;
-		} else {
-			node.childNodes.forEach(setCaret);
-		}
-	}
-
-	setCaret(textArea);
-
-	newSelection.removeAllRanges();
-	newSelection.addRange(newRange);
+	setCaretPosition(caretOffset);
 	textArea.scrollTop = scrollPosition; // Restore scroll position
 });
 
@@ -220,13 +195,13 @@ textArea.addEventListener("keydown", (event) => {
 	if (event.key === "Tab") {
 		event.preventDefault();
 
-		const start = textArea.selectionStart;
+		const caretOffset = getCaretPosition();
 
 		const indent = "\t";
 
 		document.execCommand("insertText", false, indent);
 
-		textArea.selectionStart = textArea.selectionEnd = start + indent.length;
+		setCaretPosition(caretOffset + indent.length);
 	}
 });
 
@@ -258,37 +233,60 @@ saveButton.addEventListener("click", () => {
 	);
 });
 
+textArea.addEventListener("focusout", () => {
+	if (currentFile !== null) {
+		// Save Caret Position
+		const savedCursor = getCaretPosition();
+		OpenedFiles.SET(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"savedCursor",
+			savedCursor
+		);
+		// Save Scroll Position
+		const savedScroll = textArea.scrollTop;
+		OpenedFiles.SET(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"savedScroll",
+			savedScroll
+		);
+	}
+});
+
 function loadFileIntoEditor(file) {
-	if(document.getElementById(getFileDivIdFromLink(file))){
+	textArea.focus();
+	if (document.getElementById(getFileDivIdFromLink(file))) {
 		if (currentFile !== null) {
 			const lastCurrentFile = currentFile;
 			currentFile = file;
 
-			if(document.getElementById(getFileDivIdFromLink(lastCurrentFile))){
+			if (document.getElementById(getFileDivIdFromLink(lastCurrentFile))) {
 				document
-				.getElementById(getFileDivIdFromLink(lastCurrentFile))
-				.classList.remove("curFileDiv");
+					.getElementById(getFileDivIdFromLink(lastCurrentFile))
+					.classList.remove("curFileDiv");
 
 				document
-				.getElementById(getFileDivIdFromLink(lastCurrentFile))
-				.classList.add("fileDiv");
+					.getElementById(getFileDivIdFromLink(lastCurrentFile))
+					.classList.add("fileDiv");
+
+				OpenedFiles.SET(
+					OpenedFiles.FINDQUICKINDEX("fileLink", lastCurrentFile),
+					"data",
+					textArea.innerText
+				);
+
+				OpenedFiles.SET(
+					OpenedFiles.FINDQUICKINDEX("fileLink", lastCurrentFile),
+					"savedScroll",
+					textArea.scrollTop
+				);
 			}
-			
+
 			document
 				.getElementById(getFileDivIdFromLink(currentFile))
 				.classList.add("curFileDiv");
 			document
 				.getElementById(getFileDivIdFromLink(currentFile))
 				.classList.remove("fileDiv");
-			
-			if(document.getElementById(getFileDivIdFromLink(lastCurrentFile))){
-				OpenedFiles.SET(
-					OpenedFiles.FINDQUICKINDEX("fileLink", lastCurrentFile),
-					"data",
-					textArea.innerText
-				);
-			}
-
 		}
 		currentFile = file;
 		textArea.innerText = OpenedFiles.READ(
@@ -296,6 +294,25 @@ function loadFileIntoEditor(file) {
 			"data"
 		);
 		textArea.innerHTML = highlighter(textArea.innerText, currentFile);
+
+		const scroll = OpenedFiles.READ(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"savedScroll"
+		);
+
+		const cursor = OpenedFiles.READ(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"savedCursor"
+		);
+
+		if (scroll !== null) {
+			textArea.scrollTop = scroll;
+		}
+
+		if (cursor !== null) {
+			setCaretPosition(cursor);
+		}
+
 		updateLineNumbers();
 
 		document.title = `${getFileNameFromLink(file)} - HTMLEditor`;
@@ -337,10 +354,33 @@ ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 });
 
 window.addEventListener("beforeunload", (event) => {
-	if(OpenedFiles.GETJSONDATA().length > 0){
+	if (OpenedFiles.GETJSONDATA().length > 0) {
 		event.preventDefault();
-		OpenedFiles.GETJSONDATA().forEach((e)=>{
-			closeFile(e.fileLink)
-		})
+		OpenedFiles.GETJSONDATA().forEach((e) => {
+			closeFile(e.fileLink);
+		});
+	}
+});
+
+window.addEventListener("focus", () => {
+	if (currentFile) {
+		textArea.focus();
+		const savedCursor = OpenedFiles.READ(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"savedCursor"
+		);
+		if (savedCursor !== null) {
+			setCaretPosition(savedCursor);
+		}
+	}
+});
+
+window.addEventListener("blur", () => {
+	if (currentFile && getCaretPosition() !== null) {
+		OpenedFiles.SET(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"savedCursor",
+			getCaretPosition()
+		);
 	}
 });

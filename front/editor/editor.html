@@ -14,9 +14,14 @@
 			<button id="openFile">Load</button>
 			<button id="RefreshEditor">Refresh Editor</button>
 		</div>
-		<div id="TextAreaContainer" spellcheck="false">
+		<div id="TextAreaContainer">
 			<div id="lineNumbers"></div>
-			<div id="TextArea" contenteditable="true"></div>
+			<div
+				id="TextArea"
+				contenteditable="true"
+				spellcheck="false"
+				tabindex="0"
+			></div>
 			<pre id="output"></pre>
 		</div>
 		<script src="editor.js"></script>
