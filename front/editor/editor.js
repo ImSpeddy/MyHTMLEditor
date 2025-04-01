@@ -22,6 +22,7 @@ OpenedFiles.NEWCOLUMN("data");
 OpenedFiles.NEWCOLUMN("fileDivId");
 OpenedFiles.NEWCOLUMN("savedScroll");
 OpenedFiles.NEWCOLUMN("savedCursor");
+OpenedFiles.NEWCOLUMN("savedFile")
 
 const { getCaretPosition, setCaretPosition } = require("./modules/caret");
 
@@ -45,6 +46,7 @@ async function newFileDiv(file) {
 	const fileDivText = document.createElement("p");
 	fileDivText.classList.add("fileDivText");
 	fileDivText.textContent = getFileNameFromLink(file);
+	fileDivText.id = getFileDivIdFromLink(file) + "-lbl";
 
 	const fileDivBtn = document.createElement("button");
 	fileDivBtn.classList.add("fileDivBtn");
@@ -74,6 +76,7 @@ function openFile(file, callback) {
 
 		ipcRenderer.invoke("get-file-data", file).then((response) => {
 			fileFMT.SET("data", response);
+			fileFMT.SET("savedFile", response);
 			OpenedFiles.PUSH(fileFMT);
 
 			if (typeof callback == "function") callback();
@@ -180,6 +183,12 @@ textArea.addEventListener("input", () => {
 		"data",
 		textArea.innerText
 	);
+
+	if(OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile), "savedFile") !== textArea.innerText) {
+		document.getElementById(getFileDivIdFromLink(currentFile) + "-lbl").classList.add("unsavedFile");
+	} else {
+		document.getElementById(getFileDivIdFromLink(currentFile) + "-lbl").classList.remove("unsavedFile");
+	}
 	textArea.innerHTML = highlighter(textArea.innerText, currentFile);
 
 	// Restore cursor position
@@ -231,6 +240,16 @@ saveButton.addEventListener("click", () => {
 			"data"
 		)
 	);
+	OpenedFiles.SET(
+		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+		"savedFile",
+		OpenedFiles.READ(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"data"
+		)
+	);
+
+	document.getElementById(getFileDivIdFromLink(currentFile) + "-lbl").classList.remove("unsavedFile");
 });
 
 textArea.addEventListener("focusout", () => {
