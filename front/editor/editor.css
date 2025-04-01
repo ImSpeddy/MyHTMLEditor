@@ -141,12 +141,12 @@ button:hover {
 	overflow: auto;
 	scrollbar-width: thin;
 	tab-size: 4;
-	white-space: pre-wrap;
-	word-wrap: break-word;
+	white-space: pre; /* Prevent wrapping */
+	word-wrap: normal;
 	min-height: 100px; /* Ensure it has height */
-	padding: 5px;
-	overflow-wrap: break-word;
 	box-sizing: border-box;
+	overflow-x: auto; /* Add horizontal scrollbar */
+	overflow-y: auto; /* Add vertical scrollbar */
 }
 
 #saveDialog {
