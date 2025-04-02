@@ -1,12 +1,8 @@
 = for VERSION 1.0 =
 Create README
 Add Keyboard Shortcuts
-<<<<<<< Updated upstream
-Fix link editor window size
 Add Github Actions
-=======
 Fix link editor window size (or turn it into a HTML dialog)
->>>>>>> Stashed changes
 Branding (Icons, Coloring, and maybe a rename)
 Add New File Button to the editor
 
