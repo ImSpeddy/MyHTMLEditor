@@ -203,14 +203,31 @@ textArea.addEventListener("keydown", (event) => {
 	}
 	if (event.key === "Tab") {
 		event.preventDefault();
-
 		const caretOffset = getCaretPosition();
-
 		const indent = "\t";
 
 		document.execCommand("insertText", false, indent);
-
 		setCaretPosition(caretOffset + indent.length);
+	}
+
+	if(event.ctrlKey){
+		if(event.key === "S"){
+			event.preventDefault()
+			saveFile();
+		}else if(event.key === "N"){
+			event.preventDefault()
+			// TODO: Handle new file
+		}else if(event.key === "R"){
+			event.preventDefault()
+			refreshEditor();
+		}else if(event.key === "O"){
+			event.preventDefault()
+			openNewFile();
+		}
+	}
+
+	if(event.altKey){
+		// TODO: Handle tab change using Alt+Number
 	}
 });
 
@@ -231,7 +248,7 @@ ipcRenderer.on("open-editor", (event, file) => {
 
 const saveButton = document.getElementById("SaveBtn");
 
-saveButton.addEventListener("click", () => {
+function saveFile(){
 	ipcRenderer.send(
 		"save-file",
 		currentFile,
@@ -250,7 +267,9 @@ saveButton.addEventListener("click", () => {
 	);
 
 	document.getElementById(getFileDivIdFromLink(currentFile) + "-lbl").classList.remove("unsavedFile");
-});
+}
+
+saveButton.addEventListener("click", saveFile);
 
 textArea.addEventListener("focusout", () => {
 	if (currentFile !== null) {
@@ -338,15 +357,17 @@ function loadFileIntoEditor(file) {
 	}
 }
 
-document.getElementById("openFile").addEventListener("click", () => {
+function openNewFile(){
 	ipcRenderer.invoke("filePickerDialog").then((data) => {
 		openFile(data, () => {
 			loadFileIntoEditor(data);
 		});
 	});
-});
+}
 
-document.getElementById("RefreshEditor").addEventListener("click", () => {
+document.getElementById("openFile").addEventListener("click", openNewFile);
+
+function refreshEditor(){
 	if (
 		OpenedFiles.READ(
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
@@ -366,7 +387,10 @@ document.getElementById("RefreshEditor").addEventListener("click", () => {
 			)
 		);
 	}
-});
+
+}
+
+document.getElementById("RefreshEditor").addEventListener("click", refreshEditor);
 
 ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 	OpenedFiles.SET(fileID, "linkedDisplay", display);
