@@ -211,16 +211,16 @@ textArea.addEventListener("keydown", (event) => {
 	}
 
 	if(event.ctrlKey){
-		if(event.key === "S"){
+		if(event.key === "s"){
 			event.preventDefault()
 			saveFile();
-		}else if(event.key === "N"){
+		}else if(event.key === "n"){
 			event.preventDefault()
 			// TODO: Handle new file
-		}else if(event.key === "R"){
+		}else if(event.key === "r"){
 			event.preventDefault()
 			refreshEditor();
-		}else if(event.key === "O"){
+		}else if(event.key === "o"){
 			event.preventDefault()
 			openNewFile();
 		}
