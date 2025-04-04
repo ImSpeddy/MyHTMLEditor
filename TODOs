@@ -1,12 +1,18 @@
 = for VERSION 1.0 =
-Create README
-Add Keyboard Shortcuts
-Add Github Actions
-Fix link editor window size (or turn it into a HTML dialog)
-Turn the new file window to an HTML Dialog
-Branding (Icons, Coloring, and maybe a rename)
-Add New File Button to the editor
+    Branding
+        Rename
+        Icons
+        New Coloring
+            Dynamic Skins
+        Create README
 
-= for Version 1.1 =
-Add Dynamic Skins
-Fully integrate main window onto editor
+    Add Keyboard Shortcuts
+        Change tabs using alt
+    
+    Add Github Actions
+
+    Fully integrate main window onto editor
+            Add New File Button to the editor
+            HTML Dialogs
+                Fix link editor window size (or turn it into a HTML dialog)
+                Turn the new file window to an HTML Dialog
