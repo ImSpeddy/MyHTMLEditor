@@ -223,6 +223,9 @@ textArea.addEventListener("keydown", (event) => {
 		}else if(event.key === "o"){
 			event.preventDefault()
 			openNewFile();
+		}else if(event.key === "q"){
+			event.preventDefault()
+			closeFile(currentFile);
 		}
 	}
 
