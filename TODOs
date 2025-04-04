@@ -3,8 +3,10 @@ Create README
 Add Keyboard Shortcuts
 Add Github Actions
 Fix link editor window size (or turn it into a HTML dialog)
+Turn the new file window to an HTML Dialog
 Branding (Icons, Coloring, and maybe a rename)
 Add New File Button to the editor
 
 = for Version 1.1 =
 Add Dynamic Skins
+Fully integrate main window onto editor
