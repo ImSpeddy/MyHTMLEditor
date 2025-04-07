@@ -174,6 +174,7 @@ textArea.addEventListener("scroll", () => {
 });
 
 textArea.addEventListener("input", () => {
+	updateLineNumbers();
 	const scrollPosition = textArea.scrollTop; // Preserve scroll position
 	const caretOffset = getCaretPosition();
 
@@ -199,7 +200,7 @@ textArea.addEventListener("input", () => {
 textArea.addEventListener("keydown", (event) => {
 	if (event.key === "Enter") {
 		event.preventDefault();
-		document.execCommand("insertLineBreak"); // Insert <br>
+		document.execCommand("insertLineBreak");
 	}
 	if (event.key === "Tab") {
 		event.preventDefault();
@@ -230,7 +231,24 @@ textArea.addEventListener("keydown", (event) => {
 	}
 
 	if(event.altKey){
-		// TODO: Handle tab change using Alt+Number
+		console.log(event.key)
+		const num = Number(event.key);
+		if(!isNaN(num)){
+			event.preventDefault();
+
+			switch (num) {
+				case 0:
+					if(OpenedFiles.GETJSONDATA()[9]){
+						loadFileIntoEditor(OpenedFiles.GETJSONDATA()[9].fileLink)
+					}
+					break;
+				default:
+					if(OpenedFiles.GETJSONDATA()[num-1]){
+						loadFileIntoEditor(OpenedFiles.GETJSONDATA()[num-1].fileLink)
+					}
+					break;
+			}
+		}
 	}
 });
 
