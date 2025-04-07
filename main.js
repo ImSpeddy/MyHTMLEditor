@@ -101,8 +101,10 @@ ipcMain.on("new-editor", async () => {
 	});
 	if (!result.canceled && result.filePaths && result.filePaths[0]) {
 		let editWindow = launchWindow("./front/editor/editor.html", {
-			width: 500,
-			height: 500,
+			width: 600,
+			height: 600,
+			minWidth: 600,
+			minHeight: 400,
 			webPreferences: { nodeIntegration: true, contextIsolation: false }
 		});
 		editWindow.webContents.send("open-editor", result.filePaths[0]);
