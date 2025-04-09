@@ -114,7 +114,9 @@ async function closeFile(file) {
 			dialog.close();
 
 			if (OpenedFiles.GETJSONDATA().length === 0) {
-				ipcRenderer.send("closeWindow");
+				return;
+				// TODO: Show a "Not opened file text indicator and hide the text area"
+				
 			} else {
 				if (currentFile === file) {
 					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
@@ -135,7 +137,8 @@ async function closeFile(file) {
 			dialog.close();
 
 			if (OpenedFiles.GETJSONDATA().length === 0) {
-				ipcRenderer.send("closeWindow");
+				return;
+				// TODO: Show a "Not opened file text indicator and hide the text area"
 			} else {
 				if (currentFile === file) {
 					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
@@ -150,7 +153,8 @@ async function closeFile(file) {
 		div.remove();
 
 		if (OpenedFiles.GETJSONDATA().length === 0) {
-			ipcRenderer.send("closeWindow");
+			return;
+			// TODO: Show a "Not opened file text indicator and hide the text area"
 		} else {
 			if (currentFile === file) {
 				const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
