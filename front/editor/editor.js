@@ -8,6 +8,8 @@ const {
 } = require("./modules/fileStringFunctions");
 const highlighter = require("./highlight");
 
+var fieldShown = false;
+
 // Setup needle table
 // Import Library
 const needle = require("needle-db");
@@ -84,9 +86,11 @@ function openFile(file, callback) {
 	} else {
 		alert("File already opened");
 	}
+	checkField();
 }
 
 async function closeFile(file) {
+	if (OpenedFiles.GETJSONDATA().length === 0) return;
 	let savedData;
 	await ipcRenderer.invoke("get-file-data", file).then((response) => {
 		savedData = response;
@@ -114,6 +118,7 @@ async function closeFile(file) {
 			dialog.close();
 
 			if (OpenedFiles.GETJSONDATA().length === 0) {
+				unloadFiles();
 				return;
 				// TODO: Show a "Not opened file text indicator and hide the text area"
 				
@@ -137,6 +142,7 @@ async function closeFile(file) {
 			dialog.close();
 
 			if (OpenedFiles.GETJSONDATA().length === 0) {
+				unloadFiles();
 				return;
 				// TODO: Show a "Not opened file text indicator and hide the text area"
 			} else {
@@ -153,6 +159,7 @@ async function closeFile(file) {
 		div.remove();
 
 		if (OpenedFiles.GETJSONDATA().length === 0) {
+			unloadFiles();
 			return;
 			// TODO: Show a "Not opened file text indicator and hide the text area"
 		} else {
@@ -162,6 +169,7 @@ async function closeFile(file) {
 			}
 		}
 	}
+	checkField();
 }
 
 function updateLineNumbers() {
@@ -268,12 +276,14 @@ ipcRenderer.on("open-editor", (event, file) => {
 
 			loadFileIntoEditor(file);
 		});
+		checkField();
 	});
 });
 
 const saveButton = document.getElementById("SaveBtn");
 
 function saveFile(){
+	if(currentFile === null) return;
 	ipcRenderer.send(
 		"save-file",
 		currentFile,
@@ -380,19 +390,23 @@ function loadFileIntoEditor(file) {
 
 		document.title = `${getFileNameFromLink(file)} - HTMLEditor`;
 	}
+	checkField();
 }
 
 function openNewFile(){
 	ipcRenderer.invoke("filePickerDialog").then((data) => {
-		openFile(data, () => {
-			loadFileIntoEditor(data);
-		});
+		if(data){
+			openFile(data, () => {
+				loadFileIntoEditor(data);
+			});
+		}
 	});
 }
 
 document.getElementById("openFile").addEventListener("click", openNewFile);
 
 function refreshEditor(){
+	if(currentFile === null) return;
 	if (
 		OpenedFiles.READ(
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
@@ -452,3 +466,19 @@ window.addEventListener("blur", () => {
 		);
 	}
 });
+
+function checkField() {
+	fieldShown = (OpenedFiles.GETJSONDATA().length > 0) ? true : false;
+	if (fieldShown) {
+		document.getElementById("TextAreaContainer").style.display = "flex";
+	} else {
+		document.getElementById("TextAreaContainer").style.display = "none";
+	}
+}
+
+function unloadFiles(){
+	currentFile = null;
+	textArea.innerText = "";
+	updateLineNumbers();
+	checkField();
+}
