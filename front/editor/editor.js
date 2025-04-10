@@ -24,7 +24,7 @@ OpenedFiles.NEWCOLUMN("data");
 OpenedFiles.NEWCOLUMN("fileDivId");
 OpenedFiles.NEWCOLUMN("savedScroll");
 OpenedFiles.NEWCOLUMN("savedCursor");
-OpenedFiles.NEWCOLUMN("savedFile")
+OpenedFiles.NEWCOLUMN("savedFile");
 
 const { getCaretPosition, setCaretPosition } = require("./modules/caret");
 
@@ -121,7 +121,6 @@ async function closeFile(file) {
 				unloadFiles();
 				return;
 				// TODO: Show a "Not opened file text indicator and hide the text area"
-				
 			} else {
 				if (currentFile === file) {
 					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
@@ -197,10 +196,19 @@ textArea.addEventListener("input", () => {
 		textArea.innerText
 	);
 
-	if(OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile), "savedFile") !== textArea.innerText) {
-		document.getElementById(getFileDivIdFromLink(currentFile) + "-lbl").classList.add("unsavedFile");
+	if (
+		OpenedFiles.READ(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"savedFile"
+		) !== textArea.innerText
+	) {
+		document
+			.getElementById(getFileDivIdFromLink(currentFile) + "-lbl")
+			.classList.add("unsavedFile");
 	} else {
-		document.getElementById(getFileDivIdFromLink(currentFile) + "-lbl").classList.remove("unsavedFile");
+		document
+			.getElementById(getFileDivIdFromLink(currentFile) + "-lbl")
+			.classList.remove("unsavedFile");
 	}
 	textArea.innerHTML = highlighter(textArea.innerText, currentFile);
 
@@ -223,40 +231,39 @@ textArea.addEventListener("keydown", (event) => {
 		setCaretPosition(caretOffset + indent.length);
 	}
 
-	if(event.ctrlKey){
-		if(event.key === "s"){
-			event.preventDefault()
+	if (event.ctrlKey) {
+		if (event.key === "s") {
+			event.preventDefault();
 			saveFile();
-		}else if(event.key === "n"){
-			event.preventDefault()
+		} else if (event.key === "n") {
+			event.preventDefault();
 			// TODO: Handle new file
-		}else if(event.key === "r"){
-			event.preventDefault()
+		} else if (event.key === "r") {
+			event.preventDefault();
 			refreshEditor();
-		}else if(event.key === "o"){
-			event.preventDefault()
+		} else if (event.key === "o") {
+			event.preventDefault();
 			openNewFile();
-		}else if(event.key === "q"){
-			event.preventDefault()
+		} else if (event.key === "q") {
+			event.preventDefault();
 			closeFile(currentFile);
 		}
 	}
 
-	if(event.altKey){
-		console.log(event.key)
+	if (event.altKey) {
 		const num = Number(event.key);
-		if(!isNaN(num)){
+		if (!isNaN(num)) {
 			event.preventDefault();
 
 			switch (num) {
 				case 0:
-					if(OpenedFiles.GETJSONDATA()[9]){
-						loadFileIntoEditor(OpenedFiles.GETJSONDATA()[9].fileLink)
+					if (OpenedFiles.GETJSONDATA()[9]) {
+						loadFileIntoEditor(OpenedFiles.GETJSONDATA()[9].fileLink);
 					}
 					break;
 				default:
-					if(OpenedFiles.GETJSONDATA()[num-1]){
-						loadFileIntoEditor(OpenedFiles.GETJSONDATA()[num-1].fileLink)
+					if (OpenedFiles.GETJSONDATA()[num - 1]) {
+						loadFileIntoEditor(OpenedFiles.GETJSONDATA()[num - 1].fileLink);
 					}
 					break;
 			}
@@ -282,8 +289,8 @@ ipcRenderer.on("open-editor", (event, file) => {
 
 const saveButton = document.getElementById("SaveBtn");
 
-function saveFile(){
-	if(currentFile === null) return;
+function saveFile() {
+	if (currentFile === null) return;
 	ipcRenderer.send(
 		"save-file",
 		currentFile,
@@ -301,7 +308,9 @@ function saveFile(){
 		)
 	);
 
-	document.getElementById(getFileDivIdFromLink(currentFile) + "-lbl").classList.remove("unsavedFile");
+	document
+		.getElementById(getFileDivIdFromLink(currentFile) + "-lbl")
+		.classList.remove("unsavedFile");
 }
 
 saveButton.addEventListener("click", saveFile);
@@ -393,9 +402,9 @@ function loadFileIntoEditor(file) {
 	checkField();
 }
 
-function openNewFile(){
+function openNewFile() {
 	ipcRenderer.invoke("filePickerDialog").then((data) => {
-		if(data){
+		if (data) {
 			openFile(data, () => {
 				loadFileIntoEditor(data);
 			});
@@ -405,8 +414,8 @@ function openNewFile(){
 
 document.getElementById("openFile").addEventListener("click", openNewFile);
 
-function refreshEditor(){
-	if(currentFile === null) return;
+function refreshEditor() {
+	if (currentFile === null) return;
 	if (
 		OpenedFiles.READ(
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
@@ -426,10 +435,11 @@ function refreshEditor(){
 			)
 		);
 	}
-
 }
 
-document.getElementById("RefreshEditor").addEventListener("click", refreshEditor);
+document
+	.getElementById("RefreshEditor")
+	.addEventListener("click", refreshEditor);
 
 ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 	OpenedFiles.SET(fileID, "linkedDisplay", display);
@@ -468,7 +478,7 @@ window.addEventListener("blur", () => {
 });
 
 function checkField() {
-	fieldShown = (OpenedFiles.GETJSONDATA().length > 0) ? true : false;
+	fieldShown = OpenedFiles.GETJSONDATA().length > 0 ? true : false;
 	if (fieldShown) {
 		document.getElementById("noOpenedFileContainer").style.display = "none";
 		document.getElementById("noOpenedFileDialog").style.display = "none";
@@ -480,10 +490,87 @@ function checkField() {
 	}
 }
 
-function unloadFiles(){
+function unloadFiles() {
 	document.title = `HTMLEditor`;
 	currentFile = null;
 	textArea.innerText = "";
 	updateLineNumbers();
 	checkField();
 }
+
+document.getElementById("newFileBtn").addEventListener("click", () => {
+	const dialog = document.getElementById("newFileDialog");
+	if (dialog.open) {
+		dialog.close();
+	} else {
+		dialog.showModal();
+	}
+});
+
+// New File Dialog
+
+const dirBtn = document.getElementById("PickFolderBtn");
+let dir = null;
+
+dirBtn.addEventListener("click", () => {
+	ipcRenderer.invoke("get-dir").then((response) => {
+		if (response.status == 0) {
+			document.getElementById("fileDirLbl").innerHTML = response.dir;
+			dir = response.dir;
+		}
+	});
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+	const list = document.getElementById("presetPicker");
+	ipcRenderer.invoke("get-preset-list").then((data) => {
+		data.forEach((element) => {
+			const option = document.createElement("option");
+			option.value = `${element.parentPath}\\${element.name}`;
+			option.innerHTML = element.name;
+
+			list.appendChild(option);
+		});
+	});
+});
+
+document
+	.getElementById("cancelFileCreationBtn")
+	.addEventListener("click", () => {
+		const dialog = document.getElementById("newFileDialog");
+		dialog.close();
+		document.getElementById("filenameField").value = "";
+		dir = null;
+		document.getElementById("fileDirLbl").innerHTML = "No folder selected";
+		document.getElementById("presetPicker").value = "none";
+		document.getElementById("newFileDialog").close();
+	});
+
+const createBtn = document.getElementById("createFileBtn");
+
+createBtn.addEventListener("click", () => {
+	const args = {
+		name: document.getElementById("filenameField").value,
+		dir: dir,
+		preset: document.getElementById("presetPicker").value
+	};
+
+	if (args.dir == null || args.name == null || args.preset == null) {
+		alert("Argument missing.");
+	} else {
+		ipcRenderer.invoke("createFile", args).then((response) => {
+			if (response == 0) {
+				openFile(`${args.dir}\\${args.name}`, () => {
+					loadFileIntoEditor(`${args.dir}\\${args.name}`);
+				});
+				document.getElementById("filenameField").value = "";
+				dir = null;
+				document.getElementById("fileDirLbl").innerHTML = "No folder selected";
+				document.getElementById("presetPicker").value = "none";
+				document.getElementById("newFileDialog").close();
+			} else {
+				alert("Error in file creation");
+			}
+		});
+	}
+});
