@@ -8,6 +8,8 @@ const {
 } = require("./modules/fileStringFunctions");
 const highlighter = require("./highlight");
 
+var fieldShown = false;
+
 // Setup needle table
 // Import Library
 const needle = require("needle-db");
@@ -22,7 +24,7 @@ OpenedFiles.NEWCOLUMN("data");
 OpenedFiles.NEWCOLUMN("fileDivId");
 OpenedFiles.NEWCOLUMN("savedScroll");
 OpenedFiles.NEWCOLUMN("savedCursor");
-OpenedFiles.NEWCOLUMN("savedFile")
+OpenedFiles.NEWCOLUMN("savedFile");
 
 const { getCaretPosition, setCaretPosition } = require("./modules/caret");
 
@@ -84,9 +86,11 @@ function openFile(file, callback) {
 	} else {
 		alert("File already opened");
 	}
+	checkField();
 }
 
 async function closeFile(file) {
+	if (OpenedFiles.GETJSONDATA().length === 0) return;
 	let savedData;
 	await ipcRenderer.invoke("get-file-data", file).then((response) => {
 		savedData = response;
@@ -114,7 +118,9 @@ async function closeFile(file) {
 			dialog.close();
 
 			if (OpenedFiles.GETJSONDATA().length === 0) {
-				ipcRenderer.send("closeWindow");
+				unloadFiles();
+				return;
+				// TODO: Show a "Not opened file text indicator and hide the text area"
 			} else {
 				if (currentFile === file) {
 					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
@@ -135,7 +141,9 @@ async function closeFile(file) {
 			dialog.close();
 
 			if (OpenedFiles.GETJSONDATA().length === 0) {
-				ipcRenderer.send("closeWindow");
+				unloadFiles();
+				return;
+				// TODO: Show a "Not opened file text indicator and hide the text area"
 			} else {
 				if (currentFile === file) {
 					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
@@ -150,7 +158,9 @@ async function closeFile(file) {
 		div.remove();
 
 		if (OpenedFiles.GETJSONDATA().length === 0) {
-			ipcRenderer.send("closeWindow");
+			unloadFiles();
+			return;
+			// TODO: Show a "Not opened file text indicator and hide the text area"
 		} else {
 			if (currentFile === file) {
 				const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
@@ -158,6 +168,7 @@ async function closeFile(file) {
 			}
 		}
 	}
+	checkField();
 }
 
 function updateLineNumbers() {
@@ -185,10 +196,19 @@ textArea.addEventListener("input", () => {
 		textArea.innerText
 	);
 
-	if(OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", currentFile), "savedFile") !== textArea.innerText) {
-		document.getElementById(getFileDivIdFromLink(currentFile) + "-lbl").classList.add("unsavedFile");
+	if (
+		OpenedFiles.READ(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"savedFile"
+		) !== textArea.innerText
+	) {
+		document
+			.getElementById(getFileDivIdFromLink(currentFile) + "-lbl")
+			.classList.add("unsavedFile");
 	} else {
-		document.getElementById(getFileDivIdFromLink(currentFile) + "-lbl").classList.remove("unsavedFile");
+		document
+			.getElementById(getFileDivIdFromLink(currentFile) + "-lbl")
+			.classList.remove("unsavedFile");
 	}
 	textArea.innerHTML = highlighter(textArea.innerText, currentFile);
 
@@ -197,7 +217,7 @@ textArea.addEventListener("input", () => {
 	textArea.scrollTop = scrollPosition; // Restore scroll position
 });
 
-textArea.addEventListener("keydown", (event) => {
+textArea.addEventListener("keydown", async (event) => {
 	if (event.key === "Enter") {
 		event.preventDefault();
 		document.execCommand("insertLineBreak");
@@ -210,47 +230,72 @@ textArea.addEventListener("keydown", (event) => {
 		document.execCommand("insertText", false, indent);
 		setCaretPosition(caretOffset + indent.length);
 	}
+});
 
-	if(event.ctrlKey){
-		if(event.key === "s"){
-			event.preventDefault()
+document.addEventListener("keydown", async(event) => {
+	if (event.ctrlKey) {
+		console.log(event.key)
+		if (event.key === "s") {
+			event.preventDefault();
 			saveFile();
-		}else if(event.key === "n"){
-			event.preventDefault()
-			// TODO: Handle new file
-		}else if(event.key === "r"){
-			event.preventDefault()
-			refreshEditor();
-		}else if(event.key === "o"){
-			event.preventDefault()
+		} else if (event.key.toLowerCase() === "n") {
+			event.preventDefault();
+			document.getElementById("newFileDialog").showModal();
+		} else if (event.key.toLowerCase() === "r") {
+			event.preventDefault();
+			await refreshEditor();
+		} else if (event.key.toLowerCase() === "o") {
+			event.preventDefault();
 			openNewFile();
-		}else if(event.key === "q"){
-			event.preventDefault()
+		} else if (event.key.toLowerCase() === "q") {
+			event.preventDefault();
 			closeFile(currentFile);
+		} else if(event.key.toLowerCase() === "w"){
+			event.preventDefault();
+			if(event.shiftKey) {
+				if(currentFile === null || (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))){ 
+					ipcRenderer.send("new-window");
+				}else{
+					ipcRenderer.invoke("new-window-set", currentFile).then((response) => {
+						if(response !== -1){
+							OpenedFiles.SET(
+								OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+								"linkedDisplay",
+								response
+							);
+						}
+					});
+				};
+			}else{
+				ipcRenderer.send("new-window");
+			}
 		}
 	}
 
-	if(event.altKey){
-		console.log(event.key)
+	if (event.altKey) {
 		const num = Number(event.key);
-		if(!isNaN(num)){
+		if (!isNaN(num)) {
 			event.preventDefault();
 
 			switch (num) {
 				case 0:
-					if(OpenedFiles.GETJSONDATA()[9]){
-						loadFileIntoEditor(OpenedFiles.GETJSONDATA()[9].fileLink)
+					if (OpenedFiles.GETJSONDATA()[9]) {
+						loadFileIntoEditor(OpenedFiles.GETJSONDATA()[9].fileLink);
 					}
 					break;
 				default:
-					if(OpenedFiles.GETJSONDATA()[num-1]){
-						loadFileIntoEditor(OpenedFiles.GETJSONDATA()[num-1].fileLink)
+					if (OpenedFiles.GETJSONDATA()[num - 1]) {
+						loadFileIntoEditor(OpenedFiles.GETJSONDATA()[num - 1].fileLink);
 					}
 					break;
 			}
 		}
 	}
-});
+})
+
+document.addEventListener("DOMContentLoaded", () => {
+	checkField();
+})
 
 ipcRenderer.on("open-editor", (event, file) => {
 	document.addEventListener("DOMContentLoaded", () => {
@@ -264,12 +309,14 @@ ipcRenderer.on("open-editor", (event, file) => {
 
 			loadFileIntoEditor(file);
 		});
+		checkField();
 	});
 });
 
 const saveButton = document.getElementById("SaveBtn");
 
-function saveFile(){
+function saveFile() {
+	if (currentFile === null) return;
 	ipcRenderer.send(
 		"save-file",
 		currentFile,
@@ -287,7 +334,9 @@ function saveFile(){
 		)
 	);
 
-	document.getElementById(getFileDivIdFromLink(currentFile) + "-lbl").classList.remove("unsavedFile");
+	document
+		.getElementById(getFileDivIdFromLink(currentFile) + "-lbl")
+		.classList.remove("unsavedFile");
 }
 
 saveButton.addEventListener("click", saveFile);
@@ -376,29 +425,46 @@ function loadFileIntoEditor(file) {
 
 		document.title = `${getFileNameFromLink(file)} - HTMLEditor`;
 	}
+	checkField();
 }
 
-function openNewFile(){
+function openNewFile() {
 	ipcRenderer.invoke("filePickerDialog").then((data) => {
-		openFile(data, () => {
-			loadFileIntoEditor(data);
-		});
+		if (data) {
+			openFile(data, () => {
+				loadFileIntoEditor(data);
+			});
+		}
 	});
 }
 
 document.getElementById("openFile").addEventListener("click", openNewFile);
 
-function refreshEditor(){
+async function refreshEditor() {
+	if (currentFile === null) return;
 	if (
 		OpenedFiles.READ(
-			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 			"linkedDisplay"
 		) == null
 	) {
-		ipcRenderer.invoke(
-			"pickOpenedDisplay",
-			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile)
-		);
+		let OpenedDisplays = [];
+		
+		await ipcRenderer.invoke("pickOpenedDisplay").then((response) => {
+			OpenedDisplays = response;
+		})
+
+		console.log(OpenedDisplays)
+
+		OpenedDisplays.forEach((e) => {
+			const option = document.createElement("option");
+			option.value = e.window;
+			const splittedFileLink = e.fileLink.split("\\");
+			option.innerHTML = `${splittedFileLink[splittedFileLink.length - 2]}\\${splittedFileLink[splittedFileLink.length - 1]}`;
+			document.getElementById("windowPicker").appendChild(option);
+		})
+
+		document.getElementById("pickOpenedDisplay").showModal();
 	} else {
 		ipcRenderer.send(
 			"restartDisplay",
@@ -408,10 +474,11 @@ function refreshEditor(){
 			)
 		);
 	}
-
 }
 
-document.getElementById("RefreshEditor").addEventListener("click", refreshEditor);
+document
+	.getElementById("RefreshEditor")
+	.addEventListener("click", async()=>{await refreshEditor()});
 
 ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 	OpenedFiles.SET(fileID, "linkedDisplay", display);
@@ -425,6 +492,10 @@ window.addEventListener("beforeunload", (event) => {
 		});
 	}
 });
+
+//////////////////////////////////////////////////////////////////
+// Save cursor position on blur
+//////////////////////////////////////////////////////////////////
 
 window.addEventListener("focus", () => {
 	if (currentFile) {
@@ -448,3 +519,163 @@ window.addEventListener("blur", () => {
 		);
 	}
 });
+
+///////////////////////////////////////////////////////////////
+// Hides field if no file is opened
+///////////////////////////////////////////////////////////////
+
+function checkField() {
+	fieldShown = OpenedFiles.GETJSONDATA().length > 0 ? true : false;
+	if (fieldShown) {
+		document.getElementById("noOpenedFileContainer").style.display = "none";
+		document.getElementById("noOpenedFileDialog").style.display = "none";
+		document.getElementById("TextAreaContainer").style.display = "flex";
+	} else {
+		document.getElementById("noOpenedFileContainer").style.display = "flex";
+		document.getElementById("noOpenedFileDialog").style.display = "block";
+		document.getElementById("TextAreaContainer").style.display = "none";
+	}
+}
+
+function unloadFiles() {
+	document.title = `HTMLEditor`;
+	currentFile = null;
+	textArea.innerText = "";
+	updateLineNumbers();
+	checkField();
+}
+
+//////////////////////////////////////////////////////////
+// New File Button
+//////////////////////////////////////////////////////////
+
+document.getElementById("newFileBtn").addEventListener("click", () => {
+	const dialog = document.getElementById("newFileDialog");
+	if (dialog.open) {
+		dialog.close();
+	} else {
+		dialog.showModal();
+	}
+});
+
+//////////////////////////////////////////////////////////
+// New File Dialog
+//////////////////////////////////////////////////////////
+
+const dirBtn = document.getElementById("PickFolderBtn");
+let dir = null;
+
+dirBtn.addEventListener("click", () => {
+	ipcRenderer.invoke("get-dir").then((response) => {
+		if (response.status == 0) {
+			document.getElementById("fileDirLbl").innerHTML = response.dir;
+			dir = response.dir;
+		}
+	});
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+	const list = document.getElementById("presetPicker");
+	ipcRenderer.invoke("get-preset-list").then((data) => {
+		data.forEach((element) => {
+			const option = document.createElement("option");
+			option.value = `${element.parentPath}\\${element.name}`;
+			option.innerHTML = element.name;
+
+			list.appendChild(option);
+		});
+	});
+});
+
+document
+	.getElementById("cancelFileCreationBtn")
+	.addEventListener("click", () => {
+		const dialog = document.getElementById("newFileDialog");
+		dialog.close();
+		document.getElementById("filenameField").value = "";
+		dir = null;
+		document.getElementById("fileDirLbl").innerHTML = "No folder selected";
+		document.getElementById("presetPicker").value = "none";
+		document.getElementById("newFileDialog").close();
+	});
+
+const createBtn = document.getElementById("createFileBtn");
+
+createBtn.addEventListener("click", () => {
+	const args = {
+		name: document.getElementById("filenameField").value,
+		dir: dir,
+		preset: document.getElementById("presetPicker").value
+	};
+
+	if (args.dir == null || args.name == null || args.preset == null) {
+		alert("Argument missing.");
+	} else {
+		ipcRenderer.invoke("createFile", args).then((response) => {
+			if (response == 0) {
+				openFile(`${args.dir}\\${args.name}`, () => {
+					loadFileIntoEditor(`${args.dir}\\${args.name}`);
+				});
+				document.getElementById("filenameField").value = "";
+				dir = null;
+				document.getElementById("fileDirLbl").innerHTML = "No folder selected";
+				document.getElementById("presetPicker").value = "none";
+				document.getElementById("newFileDialog").close();
+			} else {
+				alert("Error in file creation");
+			}
+		});
+	}
+});
+
+//////////////////////////////////////////////////////////
+// Open Viewer
+//////////////////////////////////////////////////////////
+
+const openViewerBtn = document.getElementById("OpenViewerBtn");
+
+openViewerBtn.addEventListener("click", (event) => {
+	if(event.shiftKey) {
+		if(currentFile === null || (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))){ 
+			ipcRenderer.send("new-window");
+		}else{
+			ipcRenderer.invoke("new-window-set", currentFile).then((response) => {
+				if(response !== -1){
+					OpenedFiles.SET(
+						OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+						"linkedDisplay",
+						response
+					);
+				}
+			});
+		};
+	}else{
+		ipcRenderer.send("new-window");
+	}
+});
+
+/////////////////////////////////////////////////////////
+// Pick Opened Display Dialog
+/////////////////////////////////////////////////////////
+
+const pickOpenedDisplayDialog = document.getElementById("pickOpenedDisplay");
+const cancelDisplayPickBtn = document.getElementById("cancelPickWindowBtn");
+
+cancelDisplayPickBtn.addEventListener("click", () => {
+	pickOpenedDisplayDialog.close();
+	document.getElementById("windowPicker").value = "none";
+})
+
+const pickWindowBtn = document.getElementById("pickWindowBtn");
+
+pickWindowBtn.addEventListener("click", () => {
+	if (document.getElementById("windowPicker").value != "none") {
+		OpenedFiles.SET(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"linkedDisplay",
+			document.getElementById("windowPicker").value
+		);
+		pickOpenedDisplayDialog.close();
+		document.getElementById("windowPicker").value = "none";
+	}
+})

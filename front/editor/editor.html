@@ -10,11 +10,23 @@
 	<body>
 		<div id="FilePicker"></div>
 		<div id="Controls">
+			<button id="newFileBtn">New File</button>
 			<button id="SaveBtn">Save</button>
-			<button id="openFile">Load</button>
+			<button id="openFile">Open</button>
+			<div class="verticalLine"></div>
+			<button id="OpenViewerBtn">Open Viewer</button>
 			<button id="RefreshEditor">Refresh Editor</button>
 		</div>
-		<div id="TextAreaContainer">
+		<div id="noOpenedFileContainer">
+			<div id="noOpenedFileDialog">
+				<h1>No opened file...</h1>
+				<h2>
+					Open one using the "Open" button or create a new one using the "New
+					File" button
+				</h2>
+			</div>
+		</div>
+		<div id="TextAreaContainer" style="display: none;">
 			<div id="lineNumbers"></div>
 			<div
 				id="TextArea"
@@ -24,12 +36,53 @@
 			></div>
 			<pre id="output"></pre>
 		</div>
-		<script src="editor.js"></script>
 		<dialog id="saveDialog">
 			<p id="saveDialogText">File is not saved</p>
 			<button id="saveButtonDialog">Save</button>
 			<button id="notSaveButtonDialog">Don't Save</button>
 			<button id="cancelSaveButtonDialog">Cancel</button>
 		</dialog>
+		<dialog id="newFileDialog">
+			<div class="mainContainerDiv">
+				<div id="fileNameDiv" class="containerDiv">
+					<label for="fileName">Filename: </label>
+					<textarea
+						name="fileName"
+						id="filenameField"
+						aria-label="Filename"
+					></textarea>
+				</div>
+				<div id="fileDirDiv" class="containerDiv">
+					<label for="PickFolderBtn">Folder: </label>
+					<button id="PickFolderBtn" name="PickFolderBtn">
+						Pick Folder...
+					</button>
+				</div>
+				<div id="fileDirLblDiv" class="containerDiv">
+					<label id="fileDirLbl">No folder selected</label>
+				</div>
+				<div id="presetDiv" class="containerDiv">
+					<label for="presetPicker">Pick preset file: </label>
+					<select name="presetPicker" id="presetPicker">
+						<option value="none">(none)</option>
+					</select>
+				</div>
+				<div id="createFileBtnDiv" class="containerDiv">
+					<button id="cancelFileCreationBtn">Cancel</button>
+					<button id="createFileBtn">Create File</button>
+				</div>
+			</div>
+		</dialog>
+		<dialog id="pickOpenedDisplay">
+			<div class="mainContainerDiv">
+				<label for="windowPicker">Pick window:</label>
+				<select name="windowPicker" id="windowPicker">
+					<option value="none">(none)</option>
+				</select>
+				<button id="cancelPickWindowBtn">Cancel</button>
+				<button id="pickWindowBtn">Pick Window</button>
+			</div>
+		</dialog>
+		<script src="editor.js"></script>
 	</body>
 </html>

@@ -8,7 +8,6 @@ module.exports.getCaretPosition = () => {
 		const range = selection.getRangeAt(0);
 
 		if (!textArea.contains(range.startContainer)) {
-			console.warn("Selection is outside the textArea or invalid");
 			return null;
 		}
 

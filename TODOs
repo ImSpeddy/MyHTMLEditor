@@ -8,9 +8,13 @@
     
     Add Github Actions
 
-    Fully integrate main window onto editor
-            Add New File Button to the editor
-            Add Open Window from the editor
-            HTML Dialogs
-                Fix link editor window size (or turn it into a HTML dialog)
-                Turn the new file window to an HTML Dialog
+    Save last state of the editor upon close
+
+    Backside event handler
+
+    Cleanup before release
+
+BUGS:
+    Editor window remains open upon closing the window
+    HTML files becoming single lined
+    Blank lines counted as double
