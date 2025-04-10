@@ -247,6 +247,9 @@ textArea.addEventListener("keydown", (event) => {
 		} else if (event.key === "q") {
 			event.preventDefault();
 			closeFile(currentFile);
+		}else if(event.key === "w"){
+			event.preventDefault();
+			// TODO: Open new window / Open current window with Shift
 		}
 	}
 
@@ -270,6 +273,10 @@ textArea.addEventListener("keydown", (event) => {
 		}
 	}
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+	checkField();
+})
 
 ipcRenderer.on("open-editor", (event, file) => {
 	document.addEventListener("DOMContentLoaded", () => {
@@ -507,7 +514,9 @@ document.getElementById("newFileBtn").addEventListener("click", () => {
 	}
 });
 
+//////////////////////////////////////////////////////////
 // New File Dialog
+//////////////////////////////////////////////////////////
 
 const dirBtn = document.getElementById("PickFolderBtn");
 let dir = null;
@@ -573,4 +582,24 @@ createBtn.addEventListener("click", () => {
 			}
 		});
 	}
+});
+
+//////////////////////////////////////////////////////////
+// Open Viewer
+//////////////////////////////////////////////////////////
+
+const openViewerBtn = document.getElementById("OpenViewerBtn");
+
+openViewerBtn.addEventListener("click", (event) => {
+	if(event.shiftKey) {
+		console.log("Shift key pressed");
+		if(currentFile === null || (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))){ 
+			ipcRenderer.send("new-window");
+		}else{
+			ipcRenderer.send("new-window-set", currentFile);
+		};
+	}else{
+		ipcRenderer.send("new-window");
+	}
+
 });

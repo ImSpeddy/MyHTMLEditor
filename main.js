@@ -21,18 +21,16 @@ const launchWindow = require("./modules/launchWindow");
 
 // Setup Window
 const createWindow = () => {
-	const window = launchWindow("./front/index/index.html", {
-		width: 350,
-		height: 350,
-		resizable: false,
-		fullscreenable: false,
-		webPreferences: {
-			nodeIntegration: true,
-			contextIsolation: false
-		}
+	const window = launchWindow("./front/editor/editor.html", {
+		width: 600,
+		height: 600,
+		minWidth: 600,
+		minHeight: 400,
+		webPreferences: { nodeIntegration: true, contextIsolation: false }
 	});
 
 	window.on("closed", () => {
+		// TODO: Save editor state
 		app.quit();
 	});
 };
@@ -69,10 +67,35 @@ ipcMain.on("new-window", async () => {
 				"window"
 			)
 			.webContents.on("destroyed", () => {
-				// Handle window closed
+				openedDisplays.DELETE(
+					openedDisplays.FINDQUICKINDEX("fileLink", result.filePaths[0])
+				);
 			});
 	}
 });
+
+ipcMain.on("new-window-set", async(event, args)=> {
+	const newWdwFMT = openedDisplays.FORMAT();
+
+		newWdwFMT.SET("fileLink", args);
+		newWdwFMT.SET(
+			"window",
+			launchWindow(args, { width: 500, height: 500 })
+		);
+
+		openedDisplays.PUSH(newWdwFMT);
+
+		openedDisplays
+			.READ(
+				openedDisplays.FINDQUICKINDEX("fileLink", args),
+				"window"
+			)
+			.webContents.on("destroyed", () => {
+				openedDisplays.DELETE(
+					openedDisplays.FINDQUICKINDEX("fileLink", args)
+				);
+			});
+})
 
 ipcMain.on("new-editor", async () => {
 	const result = await dialog.showOpenDialog({
@@ -240,8 +263,6 @@ ipcMain.handle("pickOpenedDisplay", (event, callerFileIndex) => {
 		openedDisplays: openedDisplaysReduced,
 		caller: callerFileIndex
 	});
-
-	// Handling Idea: Send the editor who called the new display and the file looking to link to the dialog, so it can call the window itself and handle the file link
 });
 
 ipcMain.on(
