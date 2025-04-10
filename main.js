@@ -50,7 +50,15 @@ ipcMain.on("new-window", async () => {
 		properties: ["openFile"],
 		filters: [{ name: "HTML Files", extensions: ["html"] }]
 	});
-	if (!result.canceled && result.filePaths && result.filePaths[0]) {
+	var flag = true;
+	if (openedDisplays.GETJSONDATA().length > 0) {
+		openedDisplays.GETJSONDATA().forEach((e) => {
+			if (e.fileLink == result.filePaths[0]) {
+				flag = false;
+			}
+		});
+	}
+	if (!result.canceled && result.filePaths && result.filePaths[0] && flag) {
 		const newWdwFMT = openedDisplays.FORMAT();
 
 		newWdwFMT.SET("fileLink", result.filePaths[0]);
@@ -74,7 +82,16 @@ ipcMain.on("new-window", async () => {
 	}
 });
 
-ipcMain.on("new-window-set", async(event, args)=> {
+ipcMain.handle("new-window-set", async(event, args)=> {
+	var flag = true;
+	if (openedDisplays.GETJSONDATA().length > 0) {
+		openedDisplays.GETJSONDATA().forEach((e) => {
+			if (e.fileLink == args) {
+				flag = false;
+			}
+		});
+	}
+	if (flag == false) return -1;
 	const newWdwFMT = openedDisplays.FORMAT();
 
 		newWdwFMT.SET("fileLink", args);
@@ -95,6 +112,8 @@ ipcMain.on("new-window-set", async(event, args)=> {
 					openedDisplays.FINDQUICKINDEX("fileLink", args)
 				);
 			});
+
+	return openedDisplays.FINDQUICKINDEX("fileLink", args);
 })
 
 ipcMain.on("new-editor", async () => {
@@ -243,26 +262,12 @@ ipcMain.on("printOnBackConsole", (event, args) => {
 	console.log(args);
 });
 
-ipcMain.handle("pickOpenedDisplay", (event, callerFileIndex) => {
-	let dialog = launchWindow(
-		"./front/pickOpenedDisplay/pickOpenedDisplay.html",
-		{
-			width: 800,
-			height: 135,
-			resizable: true, // Debug
-			fullscreenable: false,
-			webPreferences: { nodeIntegration: true, contextIsolation: false }
-		}
-	);
+ipcMain.handle("pickOpenedDisplay", async() => {
 	let openedDisplaysReduced = [];
-	openedDisplays.GETJSONDATA().forEach((e, i) => {
+	await openedDisplays.GETJSONDATA().forEach((e, i) => {
 		openedDisplaysReduced.push({ fileLink: e.fileLink, window: i });
 	});
-	dialog.webContents.send("loadOpenedEditors", {
-		callerWindowId: event.sender.id,
-		openedDisplays: openedDisplaysReduced,
-		caller: callerFileIndex
-	});
+	return openedDisplaysReduced;
 });
 
 ipcMain.on(

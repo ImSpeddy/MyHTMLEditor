@@ -26,7 +26,7 @@
 				</h2>
 			</div>
 		</div>
-		<div id="TextAreaContainer">
+		<div id="TextAreaContainer" style="display: none;">
 			<div id="lineNumbers"></div>
 			<div
 				id="TextArea"
@@ -73,7 +73,16 @@
 				</div>
 			</div>
 		</dialog>
-		<dialog id="pickOpenedDisplay"></dialog>
+		<dialog id="pickOpenedDisplay">
+			<div class="mainContainerDiv">
+				<label for="windowPicker">Pick window:</label>
+				<select name="windowPicker" id="windowPicker">
+					<option value="none">(none)</option>
+				</select>
+				<button id="cancelPickWindowBtn">Cancel</button>
+				<button id="pickWindowBtn">Pick Window</button>
+			</div>
+		</dialog>
 		<script src="editor.js"></script>
 	</body>
 </html>

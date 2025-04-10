@@ -217,7 +217,7 @@ textArea.addEventListener("input", () => {
 	textArea.scrollTop = scrollPosition; // Restore scroll position
 });
 
-textArea.addEventListener("keydown", (event) => {
+textArea.addEventListener("keydown", async (event) => {
 	if (event.key === "Enter") {
 		event.preventDefault();
 		document.execCommand("insertLineBreak");
@@ -230,26 +230,45 @@ textArea.addEventListener("keydown", (event) => {
 		document.execCommand("insertText", false, indent);
 		setCaretPosition(caretOffset + indent.length);
 	}
+});
 
+document.addEventListener("keydown", async(event) => {
 	if (event.ctrlKey) {
+		console.log(event.key)
 		if (event.key === "s") {
 			event.preventDefault();
 			saveFile();
-		} else if (event.key === "n") {
+		} else if (event.key.toLowerCase() === "n") {
 			event.preventDefault();
-			// TODO: Handle new file
-		} else if (event.key === "r") {
+			document.getElementById("newFileDialog").showModal();
+		} else if (event.key.toLowerCase() === "r") {
 			event.preventDefault();
-			refreshEditor();
-		} else if (event.key === "o") {
+			await refreshEditor();
+		} else if (event.key.toLowerCase() === "o") {
 			event.preventDefault();
 			openNewFile();
-		} else if (event.key === "q") {
+		} else if (event.key.toLowerCase() === "q") {
 			event.preventDefault();
 			closeFile(currentFile);
-		}else if(event.key === "w"){
+		} else if(event.key.toLowerCase() === "w"){
 			event.preventDefault();
-			// TODO: Open new window / Open current window with Shift
+			if(event.shiftKey) {
+				if(currentFile === null || (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))){ 
+					ipcRenderer.send("new-window");
+				}else{
+					ipcRenderer.invoke("new-window-set", currentFile).then((response) => {
+						if(response !== -1){
+							OpenedFiles.SET(
+								OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+								"linkedDisplay",
+								response
+							);
+						}
+					});
+				};
+			}else{
+				ipcRenderer.send("new-window");
+			}
 		}
 	}
 
@@ -272,7 +291,7 @@ textArea.addEventListener("keydown", (event) => {
 			}
 		}
 	}
-});
+})
 
 document.addEventListener("DOMContentLoaded", () => {
 	checkField();
@@ -421,18 +440,31 @@ function openNewFile() {
 
 document.getElementById("openFile").addEventListener("click", openNewFile);
 
-function refreshEditor() {
+async function refreshEditor() {
 	if (currentFile === null) return;
 	if (
 		OpenedFiles.READ(
-			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 			"linkedDisplay"
 		) == null
 	) {
-		ipcRenderer.invoke(
-			"pickOpenedDisplay",
-			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile)
-		);
+		let OpenedDisplays = [];
+		
+		await ipcRenderer.invoke("pickOpenedDisplay").then((response) => {
+			OpenedDisplays = response;
+		})
+
+		console.log(OpenedDisplays)
+
+		OpenedDisplays.forEach((e) => {
+			const option = document.createElement("option");
+			option.value = e.window;
+			const splittedFileLink = e.fileLink.split("\\");
+			option.innerHTML = `${splittedFileLink[splittedFileLink.length - 2]}\\${splittedFileLink[splittedFileLink.length - 1]}`;
+			document.getElementById("windowPicker").appendChild(option);
+		})
+
+		document.getElementById("pickOpenedDisplay").showModal();
 	} else {
 		ipcRenderer.send(
 			"restartDisplay",
@@ -446,7 +478,7 @@ function refreshEditor() {
 
 document
 	.getElementById("RefreshEditor")
-	.addEventListener("click", refreshEditor);
+	.addEventListener("click", async()=>{await refreshEditor()});
 
 ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 	OpenedFiles.SET(fileID, "linkedDisplay", display);
@@ -460,6 +492,10 @@ window.addEventListener("beforeunload", (event) => {
 		});
 	}
 });
+
+//////////////////////////////////////////////////////////////////
+// Save cursor position on blur
+//////////////////////////////////////////////////////////////////
 
 window.addEventListener("focus", () => {
 	if (currentFile) {
@@ -484,6 +520,10 @@ window.addEventListener("blur", () => {
 	}
 });
 
+///////////////////////////////////////////////////////////////
+// Hides field if no file is opened
+///////////////////////////////////////////////////////////////
+
 function checkField() {
 	fieldShown = OpenedFiles.GETJSONDATA().length > 0 ? true : false;
 	if (fieldShown) {
@@ -504,6 +544,10 @@ function unloadFiles() {
 	updateLineNumbers();
 	checkField();
 }
+
+//////////////////////////////////////////////////////////
+// New File Button
+//////////////////////////////////////////////////////////
 
 document.getElementById("newFileBtn").addEventListener("click", () => {
 	const dialog = document.getElementById("newFileDialog");
@@ -592,14 +636,46 @@ const openViewerBtn = document.getElementById("OpenViewerBtn");
 
 openViewerBtn.addEventListener("click", (event) => {
 	if(event.shiftKey) {
-		console.log("Shift key pressed");
 		if(currentFile === null || (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))){ 
 			ipcRenderer.send("new-window");
 		}else{
-			ipcRenderer.send("new-window-set", currentFile);
+			ipcRenderer.invoke("new-window-set", currentFile).then((response) => {
+				if(response !== -1){
+					OpenedFiles.SET(
+						OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+						"linkedDisplay",
+						response
+					);
+				}
+			});
 		};
 	}else{
 		ipcRenderer.send("new-window");
 	}
-
 });
+
+/////////////////////////////////////////////////////////
+// Pick Opened Display Dialog
+/////////////////////////////////////////////////////////
+
+const pickOpenedDisplayDialog = document.getElementById("pickOpenedDisplay");
+const cancelDisplayPickBtn = document.getElementById("cancelPickWindowBtn");
+
+cancelDisplayPickBtn.addEventListener("click", () => {
+	pickOpenedDisplayDialog.close();
+	document.getElementById("windowPicker").value = "none";
+})
+
+const pickWindowBtn = document.getElementById("pickWindowBtn");
+
+pickWindowBtn.addEventListener("click", () => {
+	if (document.getElementById("windowPicker").value != "none") {
+		OpenedFiles.SET(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"linkedDisplay",
+			document.getElementById("windowPicker").value
+		);
+		pickOpenedDisplayDialog.close();
+		document.getElementById("windowPicker").value = "none";
+	}
+})

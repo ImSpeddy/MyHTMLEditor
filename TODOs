@@ -8,13 +8,11 @@
     
     Add Github Actions
 
-    Fully integrate main window onto editor
-            HTML Dialogs
-                Fix link editor window size (or turn it into a HTML dialog)
-
     Save last state of the editor upon close
 
     Backside event handler
+
+    Cleanup before release
 
 BUGS:
     Editor window remains open upon closing the window
