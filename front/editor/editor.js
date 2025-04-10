@@ -9,6 +9,7 @@ const {
 const highlighter = require("./highlight");
 
 var fieldShown = false;
+var isClosing = false;
 
 // Setup needle table
 // Import Library
@@ -90,7 +91,9 @@ function openFile(file, callback) {
 }
 
 async function closeFile(file) {
-	if (OpenedFiles.GETJSONDATA().length === 0) return;
+	if (OpenedFiles.GETJSONDATA().length === 0 && isClosing) {
+		ipcRenderer.send("closeWindow");
+	}
 	let savedData;
 	await ipcRenderer.invoke("get-file-data", file).then((response) => {
 		savedData = response;
@@ -119,8 +122,10 @@ async function closeFile(file) {
 
 			if (OpenedFiles.GETJSONDATA().length === 0) {
 				unloadFiles();
+				if (isClosing) {
+					ipcRenderer.send("closeWindow");
+				}
 				return;
-				// TODO: Show a "Not opened file text indicator and hide the text area"
 			} else {
 				if (currentFile === file) {
 					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
@@ -142,8 +147,10 @@ async function closeFile(file) {
 
 			if (OpenedFiles.GETJSONDATA().length === 0) {
 				unloadFiles();
+				if (isClosing) {
+					ipcRenderer.send("closeWindow");
+				}
 				return;
-				// TODO: Show a "Not opened file text indicator and hide the text area"
 			} else {
 				if (currentFile === file) {
 					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
@@ -159,8 +166,10 @@ async function closeFile(file) {
 
 		if (OpenedFiles.GETJSONDATA().length === 0) {
 			unloadFiles();
+			if (isClosing) {
+				ipcRenderer.send("closeWindow");
+			}
 			return;
-			// TODO: Show a "Not opened file text indicator and hide the text area"
 		} else {
 			if (currentFile === file) {
 				const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
@@ -169,6 +178,9 @@ async function closeFile(file) {
 		}
 	}
 	checkField();
+	if (isClosing && OpenedFiles.GETJSONDATA().length === 0) {
+		ipcRenderer.send("closeWindow");
+	}
 }
 
 function updateLineNumbers() {
@@ -232,9 +244,9 @@ textArea.addEventListener("keydown", async (event) => {
 	}
 });
 
-document.addEventListener("keydown", async(event) => {
+document.addEventListener("keydown", async (event) => {
 	if (event.ctrlKey) {
-		console.log(event.key)
+		console.log(event.key);
 		if (event.key === "s") {
 			event.preventDefault();
 			saveFile();
@@ -250,14 +262,21 @@ document.addEventListener("keydown", async(event) => {
 		} else if (event.key.toLowerCase() === "q") {
 			event.preventDefault();
 			closeFile(currentFile);
-		} else if(event.key.toLowerCase() === "w"){
+			if (OpenedFiles.GETJSONDATA().length === 0) {
+				isClosing = true;
+				ipcRenderer.send("closeWindow");
+			}
+		} else if (event.key.toLowerCase() === "w") {
 			event.preventDefault();
-			if(event.shiftKey) {
-				if(currentFile === null || (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))){ 
+			if (event.shiftKey) {
+				if (
+					currentFile === null ||
+					(!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))
+				) {
 					ipcRenderer.send("new-window");
-				}else{
+				} else {
 					ipcRenderer.invoke("new-window-set", currentFile).then((response) => {
-						if(response !== -1){
+						if (response !== -1) {
 							OpenedFiles.SET(
 								OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 								"linkedDisplay",
@@ -265,8 +284,8 @@ document.addEventListener("keydown", async(event) => {
 							);
 						}
 					});
-				};
-			}else{
+				}
+			} else {
 				ipcRenderer.send("new-window");
 			}
 		}
@@ -291,11 +310,11 @@ document.addEventListener("keydown", async(event) => {
 			}
 		}
 	}
-})
+});
 
 document.addEventListener("DOMContentLoaded", () => {
 	checkField();
-})
+});
 
 ipcRenderer.on("open-editor", (event, file) => {
 	document.addEventListener("DOMContentLoaded", () => {
@@ -444,17 +463,17 @@ async function refreshEditor() {
 	if (currentFile === null) return;
 	if (
 		OpenedFiles.READ(
-		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 			"linkedDisplay"
 		) == null
 	) {
 		let OpenedDisplays = [];
-		
+
 		await ipcRenderer.invoke("pickOpenedDisplay").then((response) => {
 			OpenedDisplays = response;
-		})
+		});
 
-		console.log(OpenedDisplays)
+		console.log(OpenedDisplays);
 
 		OpenedDisplays.forEach((e) => {
 			const option = document.createElement("option");
@@ -462,7 +481,7 @@ async function refreshEditor() {
 			const splittedFileLink = e.fileLink.split("\\");
 			option.innerHTML = `${splittedFileLink[splittedFileLink.length - 2]}\\${splittedFileLink[splittedFileLink.length - 1]}`;
 			document.getElementById("windowPicker").appendChild(option);
-		})
+		});
 
 		document.getElementById("pickOpenedDisplay").showModal();
 	} else {
@@ -476,20 +495,24 @@ async function refreshEditor() {
 	}
 }
 
-document
-	.getElementById("RefreshEditor")
-	.addEventListener("click", async()=>{await refreshEditor()});
+document.getElementById("RefreshEditor").addEventListener("click", async () => {
+	await refreshEditor();
+});
 
 ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 	OpenedFiles.SET(fileID, "linkedDisplay", display);
 });
 
 window.addEventListener("beforeunload", (event) => {
+	isClosing = true;
 	if (OpenedFiles.GETJSONDATA().length > 0) {
 		event.preventDefault();
-		OpenedFiles.GETJSONDATA().forEach((e) => {
-			closeFile(e.fileLink);
+		OpenedFiles.GETJSONDATA().forEach(async (e) => {
+			await closeFile(e.fileLink);
 		});
+		ipcRenderer.send("closeWindow");
+	} else {
+		ipcRenderer.send("closeWindow");
 	}
 });
 
@@ -635,12 +658,15 @@ createBtn.addEventListener("click", () => {
 const openViewerBtn = document.getElementById("OpenViewerBtn");
 
 openViewerBtn.addEventListener("click", (event) => {
-	if(event.shiftKey) {
-		if(currentFile === null || (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))){ 
+	if (event.shiftKey) {
+		if (
+			currentFile === null ||
+			(!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))
+		) {
 			ipcRenderer.send("new-window");
-		}else{
+		} else {
 			ipcRenderer.invoke("new-window-set", currentFile).then((response) => {
-				if(response !== -1){
+				if (response !== -1) {
 					OpenedFiles.SET(
 						OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 						"linkedDisplay",
@@ -648,8 +674,8 @@ openViewerBtn.addEventListener("click", (event) => {
 					);
 				}
 			});
-		};
-	}else{
+		}
+	} else {
 		ipcRenderer.send("new-window");
 	}
 });
@@ -664,7 +690,7 @@ const cancelDisplayPickBtn = document.getElementById("cancelPickWindowBtn");
 cancelDisplayPickBtn.addEventListener("click", () => {
 	pickOpenedDisplayDialog.close();
 	document.getElementById("windowPicker").value = "none";
-})
+});
 
 const pickWindowBtn = document.getElementById("pickWindowBtn");
 
@@ -678,4 +704,4 @@ pickWindowBtn.addEventListener("click", () => {
 		pickOpenedDisplayDialog.close();
 		document.getElementById("windowPicker").value = "none";
 	}
-})
+});

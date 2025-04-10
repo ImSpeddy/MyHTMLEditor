@@ -14,7 +14,8 @@
 
     Cleanup before release
 
+    Remove Linked Display if Display is closed
+
 BUGS:
-    Editor window remains open upon closing the window
     HTML files becoming single lined
     Blank lines counted as double

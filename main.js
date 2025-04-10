@@ -82,7 +82,7 @@ ipcMain.on("new-window", async () => {
 	}
 });
 
-ipcMain.handle("new-window-set", async(event, args)=> {
+ipcMain.handle("new-window-set", async (event, args) => {
 	var flag = true;
 	if (openedDisplays.GETJSONDATA().length > 0) {
 		openedDisplays.GETJSONDATA().forEach((e) => {
@@ -94,27 +94,19 @@ ipcMain.handle("new-window-set", async(event, args)=> {
 	if (flag == false) return -1;
 	const newWdwFMT = openedDisplays.FORMAT();
 
-		newWdwFMT.SET("fileLink", args);
-		newWdwFMT.SET(
-			"window",
-			launchWindow(args, { width: 500, height: 500 })
-		);
+	newWdwFMT.SET("fileLink", args);
+	newWdwFMT.SET("window", launchWindow(args, { width: 500, height: 500 }));
 
-		openedDisplays.PUSH(newWdwFMT);
+	openedDisplays.PUSH(newWdwFMT);
 
-		openedDisplays
-			.READ(
-				openedDisplays.FINDQUICKINDEX("fileLink", args),
-				"window"
-			)
-			.webContents.on("destroyed", () => {
-				openedDisplays.DELETE(
-					openedDisplays.FINDQUICKINDEX("fileLink", args)
-				);
-			});
+	openedDisplays
+		.READ(openedDisplays.FINDQUICKINDEX("fileLink", args), "window")
+		.webContents.on("destroyed", () => {
+			openedDisplays.DELETE(openedDisplays.FINDQUICKINDEX("fileLink", args));
+		});
 
 	return openedDisplays.FINDQUICKINDEX("fileLink", args);
-})
+});
 
 ipcMain.on("new-editor", async () => {
 	const result = await dialog.showOpenDialog({
@@ -262,7 +254,7 @@ ipcMain.on("printOnBackConsole", (event, args) => {
 	console.log(args);
 });
 
-ipcMain.handle("pickOpenedDisplay", async() => {
+ipcMain.handle("pickOpenedDisplay", async () => {
 	let openedDisplaysReduced = [];
 	await openedDisplays.GETJSONDATA().forEach((e, i) => {
 		openedDisplaysReduced.push({ fileLink: e.fileLink, window: i });
