@@ -24,6 +24,15 @@ body {
 #FilePicker {
 	overflow-y: hidden;
 	overflow-x: auto;
+	height: 56px;
+	min-height: 56px;
+	max-height: 56px;
+}
+
+#Controls {
+	height: 48px;
+	min-height: 48px;
+	max-height: 48px;
 }
 
 .fileDiv {
@@ -167,4 +176,30 @@ button:hover {
 .verticalLine {
 	border-left: 1px solid rgb(192, 192, 192);
 	height: 80%;
+}
+
+h1, h2 {
+	color: white;
+	font-family: 'Arial';
+}
+
+h1 {
+	font-weight: bold;
+}
+
+h2 {
+	font-weight: lighter;
+}
+
+#noOpenedFileContainer {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+	width: 100%;
+}
+
+#noOpenedFileDialog{
+	text-align: center;
+	padding: 5px;
 }

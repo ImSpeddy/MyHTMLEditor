@@ -470,13 +470,18 @@ window.addEventListener("blur", () => {
 function checkField() {
 	fieldShown = (OpenedFiles.GETJSONDATA().length > 0) ? true : false;
 	if (fieldShown) {
+		document.getElementById("noOpenedFileContainer").style.display = "none";
+		document.getElementById("noOpenedFileDialog").style.display = "none";
 		document.getElementById("TextAreaContainer").style.display = "flex";
 	} else {
+		document.getElementById("noOpenedFileContainer").style.display = "flex";
+		document.getElementById("noOpenedFileDialog").style.display = "block";
 		document.getElementById("TextAreaContainer").style.display = "none";
 	}
 }
 
 function unloadFiles(){
+	document.title = `HTMLEditor`;
 	currentFile = null;
 	textArea.innerText = "";
 	updateLineNumbers();
