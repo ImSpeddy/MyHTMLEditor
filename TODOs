@@ -10,8 +10,6 @@
 
     Save last state of the editor upon close
 
-    Backside event handler
-
     Cleanup before release
 
     Remove Linked Display if Display is closed
