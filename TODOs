@@ -8,12 +8,16 @@
     
     Add Github Actions
 
-    Save last state of the editor upon close
-
     Cleanup before release
 
     Remove Linked Display if Display is closed
 
+    Move functions to front
+
 BUGS:
     HTML files becoming single lined
-    Blank lines counted as double
+    Blank lines counted as double at the end of the file
+
+= for VERSION 1.1 =
+
+    Save last state of the editor upon close
