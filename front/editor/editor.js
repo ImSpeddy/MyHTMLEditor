@@ -117,7 +117,7 @@ async function closeFile(file) {
 
 		cancelButton.addEventListener("click", () => {
 			dialog.close();
-		});
+		}, {once: true});
 
 		dontSaveButton.addEventListener("click", () => {
 			OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
@@ -136,7 +136,7 @@ async function closeFile(file) {
 					loadFileIntoEditor(nextFile);
 				}
 			}
-		});
+		}, {once: true});
 
 		saveButton.addEventListener("click", () => {
 			ipcRenderer.send(
@@ -161,7 +161,7 @@ async function closeFile(file) {
 					loadFileIntoEditor(nextFile);
 				}
 			}
-		});
+		}, {once: true});
 	} else {
 		OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
 
@@ -250,7 +250,6 @@ textArea.addEventListener("keydown", async (event) => {
 
 document.addEventListener("keydown", async (event) => {
 	if (event.ctrlKey) {
-		console.log(event.key);
 		if (event.key === "s") {
 			event.preventDefault();
 			saveFile();
@@ -483,8 +482,6 @@ async function refreshEditor() {
 		await ipcRenderer.invoke("pickOpenedDisplay").then((response) => {
 			OpenedDisplays = response;
 		});
-
-		console.log(OpenedDisplays);
 
 		OpenedDisplays.forEach((e) => {
 			const option = document.createElement("option");

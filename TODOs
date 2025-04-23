@@ -2,8 +2,6 @@
     Branding
         Rename
         Icons
-        New Coloring
-            Dynamic Skins
         Create README
     
     Add Github Actions
@@ -16,8 +14,7 @@
 
 BUGS:
     Blank lines counted as double at the end of the file
-    Hides Text Area if the current file has changes and is closed
 
 = for VERSION 1.1 =
-
     Save last state of the editor upon close
+    Dynamic Skins
