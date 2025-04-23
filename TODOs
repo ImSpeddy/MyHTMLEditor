@@ -15,8 +15,9 @@
     Move functions to front
 
 BUGS:
-    HTML files becoming single lined
+    Files opened first become single-lined
     Blank lines counted as double at the end of the file
+    Hides Text Area if the current file has changes is closed
 
 = for VERSION 1.1 =
 
