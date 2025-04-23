@@ -8,6 +8,8 @@ const {
 } = require("./modules/fileStringFunctions");
 const highlighter = require("./highlight");
 
+const fs = require('fs')
+
 var fieldShown = false;
 var isClosing = false;
 
@@ -64,7 +66,11 @@ async function newFileDiv(file) {
 	document.getElementById("FilePicker").appendChild(fileDiv);
 }
 
-function openFile(file, callback) {
+///////////////////////////////////////////////////////////////
+// Handle file opening
+///////////////////////////////////////////////////////////////
+
+async function openFile(file, callback) {
 	if (OpenedFiles.FINDQUICKINDEX("fileLink", file) === -1) {
 		const fileFMT = OpenedFiles.FORMAT();
 		fileFMT.SET("fileLink", file);
@@ -77,13 +83,12 @@ function openFile(file, callback) {
 
 		newFileDiv(file);
 
-		ipcRenderer.invoke("get-file-data", file).then((response) => {
-			fileFMT.SET("data", response);
-			fileFMT.SET("savedFile", response);
-			OpenedFiles.PUSH(fileFMT);
+		const fileData = await fs.readFileSync(file, {encoding: 'utf-8'})
+		fileFMT.SET("data", fileData);
+		fileFMT.SET("savedFile", fileData);
+		OpenedFiles.PUSH(fileFMT);
 
-			if (typeof callback == "function") callback();
-		});
+		if (typeof callback == "function") callback();
 	} else {
 		alert("File already opened");
 	}
@@ -94,10 +99,9 @@ async function closeFile(file) {
 	if (OpenedFiles.GETJSONDATA().length === 0 && isClosing) {
 		ipcRenderer.send("closeWindow");
 	}
+
 	let savedData;
-	await ipcRenderer.invoke("get-file-data", file).then((response) => {
-		savedData = response;
-	});
+	savedData = await fs.readFileSync(file, {encoding: "utf-8"})
 
 	if (
 		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") !==
@@ -379,6 +383,10 @@ textArea.addEventListener("focusout", () => {
 	}
 });
 
+////////////////////////////////////////////////////////////////
+// Load file into editor
+////////////////////////////////////////////////////////////////
+
 function loadFileIntoEditor(file) {
 	textArea.focus();
 	if (document.getElementById(getFileDivIdFromLink(file))) {
@@ -398,7 +406,7 @@ function loadFileIntoEditor(file) {
 				OpenedFiles.SET(
 					OpenedFiles.FINDQUICKINDEX("fileLink", lastCurrentFile),
 					"data",
-					textArea.innerText
+					textArea.innerText.replace(/\n/g, "\r\n")
 				);
 
 				OpenedFiles.SET(
@@ -415,12 +423,15 @@ function loadFileIntoEditor(file) {
 				.getElementById(getFileDivIdFromLink(currentFile))
 				.classList.remove("fileDiv");
 		}
+
 		currentFile = file;
-		textArea.innerText = OpenedFiles.READ(
+
+		fileData = OpenedFiles.READ(
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 			"data"
-		);
-		textArea.innerHTML = highlighter(textArea.innerText, currentFile);
+		)
+
+		textArea.innerHTML = highlighter(fileData, currentFile);
 
 		const scroll = OpenedFiles.READ(
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
