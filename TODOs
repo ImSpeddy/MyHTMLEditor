@@ -16,7 +16,7 @@
 
 BUGS:
     Blank lines counted as double at the end of the file
-    Hides Text Area if the current file has changes is closed
+    Hides Text Area if the current file has changes and is closed
 
 = for VERSION 1.1 =
 
