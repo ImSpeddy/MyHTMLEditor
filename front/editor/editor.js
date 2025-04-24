@@ -8,7 +8,7 @@ const {
 } = require("./modules/fileStringFunctions");
 const highlighter = require("./highlight");
 
-const fs = require('fs')
+const fs = require("fs");
 
 var fieldShown = false;
 var isClosing = false;
@@ -83,7 +83,7 @@ async function openFile(file, callback) {
 
 		newFileDiv(file);
 
-		const fileData = await fs.readFileSync(file, {encoding: 'utf-8'})
+		const fileData = await fs.readFileSync(file, { encoding: "utf-8" });
 		fileFMT.SET("data", fileData);
 		fileFMT.SET("savedFile", fileData);
 		OpenedFiles.PUSH(fileFMT);
@@ -101,7 +101,7 @@ async function closeFile(file) {
 	}
 
 	let savedData;
-	savedData = await fs.readFileSync(file, {encoding: "utf-8"})
+	savedData = await fs.readFileSync(file, { encoding: "utf-8" });
 
 	if (
 		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") !==
@@ -429,7 +429,7 @@ function loadFileIntoEditor(file) {
 		const fileData = OpenedFiles.READ(
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 			"data"
-		)
+		);
 
 		textArea.innerHTML = highlighter(fileData, currentFile);
 
