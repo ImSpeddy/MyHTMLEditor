@@ -4,7 +4,7 @@
 	"directories": {
 		"output": "dist"
 	},
-	"files": ["**/*", "filePresets/**/*"],
+	"files": ["filePresets/**/*"],
 	"win": {
 		"target": "zip",
 		"artifactName": "HTMLEditor-${version}-win.zip"
