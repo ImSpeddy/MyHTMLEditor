@@ -18,6 +18,12 @@ jobs:
       contents: write  # Ensure write permissions to push changes
 
     steps:
+      - name: Skip if commit is from workflow (prevents recursion)
+        if: startsWith(github.event.head_commit.message, 'WF:')  # Skip workflow-triggered commits
+        run: |
+          echo "Skipping commit because it is a workflow-triggered commit"
+          exit 0  # Exit early to avoid committing changes again
+    
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -35,17 +41,10 @@ jobs:
       - name: Run ESLint with auto-fix
         run: |
           npx eslint --fix .  # Lint the code and automatically fix issues
-
-      - name: Prettify code with Prettier
-        uses: creyD/prettier_action@v4.3
-        with:
-          prettier_options: "--write '**/*.{js,json,html,css}'"
-
-      - name: Skip if commit is from workflow (prevents recursion)
-        if: startsWith(github.event.head_commit.message, 'WF:')  # Skip workflow-triggered commits
+          
+      - name: Run Prettier
         run: |
-          echo "Skipping commit because it is a workflow-triggered commit"
-          exit 0  # Exit early to avoid committing changes again
+          npx prettier --write '**/*.{js,json,html,css}'
 
       - name: Set up Git credentials
         run: |
