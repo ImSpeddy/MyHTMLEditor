@@ -1,17 +1,23 @@
 {
-	"appId": "com.speddy.htmleditor",
-	"productName": "HTMLEditor",
-	"directories": {
-		"output": "dist"
-	},
-	"files": ["**/*", "filePresets/**/*"],
-	"win": {
-		"target": "zip"
-	},
-	"mac": {
-		"target": "zip"
-	},
-	"linux": {
-		"target": "AppImage"
-	}
+  "appId": "com.speddy.htmleditor",
+  "productName": "HTMLEditor",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "**/*",
+    "filePresets/**/*"
+  ],
+  "win": {
+    "target": "zip",
+    "artifactName": "HTMLEditor-${version}-win.zip"
+  },
+  "mac": {
+    "target": "zip",
+    "artifactName": "HTMLEditor-${version}-mac-${arch}.zip"
+  },
+  "linux": {
+    "target": "AppImage",
+    "artifactName": "HTMLEditor-${version}-linux.AppImage"
+  }
 }

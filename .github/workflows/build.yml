@@ -17,6 +17,7 @@ jobs:
     strategy:
       matrix:
         platform: [linux, macos, windows]  # Build for all three platforms
+        macos_arch: [x64, arm64]
 
     steps:
       - name: Checkout
@@ -31,11 +32,16 @@ jobs:
         run: npm install
 
       - name: Build app for ${{ matrix.platform }}
-        uses: samuelmeuli/action-electron-builder@v1.6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ github.ref }}
-          platform: ${{ matrix.platform }}
+        run: |
+          if [ "${{ matrix.platform }}" == "linux" ]; then
+            npx electron-builder --linux --x64 --AppImage
+          elif [ "${{ matrix.platform }}" == "macos" ]; then
+            npx electron-builder --mac --${{ matrix.macos_arch }} --zip
+          elif [ "${{ matrix.platform }}" == "windows" ]; then
+            npx electron-builder --win --x64 --zip
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release for ${{ matrix.platform }}
         uses: softprops/action-gh-release@v1
