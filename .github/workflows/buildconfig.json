@@ -1,0 +1,21 @@
+{
+    "appId": "com.speddy.htmleditor",
+    "productName": "HTMLEditor",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "filePresets/**/*"
+    ],
+    "win": {
+      "target": "zip"
+    },
+    "mac": {
+      "target": "zip"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+  
