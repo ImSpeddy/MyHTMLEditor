@@ -27,21 +27,15 @@ jobs:
         run: npm install
 
       - name: Build app
-        run: npx electron-builder -mwl
+        run: npx electron-builder -l
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build app (Mac x64)
-        run: npx electron-builder -m --x64
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+   
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref }}
           files: |
-            dist/*.AppImage  # For Linux
-            dist/*.zip       # For Windows and Mac
+            dist/*.AppImage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
