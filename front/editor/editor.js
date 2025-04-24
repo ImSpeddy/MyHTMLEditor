@@ -426,7 +426,7 @@ function loadFileIntoEditor(file) {
 
 		currentFile = file;
 
-		fileData = OpenedFiles.READ(
+		const fileData = OpenedFiles.READ(
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 			"data"
 		)
