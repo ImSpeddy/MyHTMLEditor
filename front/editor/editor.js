@@ -8,7 +8,7 @@ const {
 } = require("./modules/fileStringFunctions");
 const highlighter = require("./highlight");
 
-const fs = require("fs");
+const fs = require('fs');
 
 var fieldShown = false;
 var isClosing = false;
