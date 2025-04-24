@@ -4,10 +4,8 @@
 	"directories": {
 		"output": "dist"
 	},
-	"files":[
-		 "!filePresets/**"
-	],
-	"extraResources": [{"from": "filePresets", "to": "../filePresets"}],
+	"files": ["!filePresets/**"],
+	"extraResources": [{ "from": "filePresets", "to": "../filePresets" }],
 	"win": {
 		"target": "zip",
 		"artifactName": "HTMLEditor-${version}-win.zip"
