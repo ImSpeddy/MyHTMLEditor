@@ -14,6 +14,10 @@ jobs:
     permissions:
       contents: write  # Required to upload the release
 
+    strategy:
+      matrix:
+        platform: [linux, macos, windows]  # Build for all three platforms
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -26,17 +30,19 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build app
+      - name: Build app for ${{ matrix.platform }}
         uses: samuelmeuli/action-electron-builder@v1.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          release: true
+          version: ${{ github.ref }}
+          platform: ${{ matrix.platform }}
 
-      - name: Upload Release (if needed)
+      - name: Upload Release for ${{ matrix.platform }}
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
           files: |
-            dist/*.zip
+            dist/*.AppImage  # For Linux
+            dist/*.zip       # For Windows and Mac
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
