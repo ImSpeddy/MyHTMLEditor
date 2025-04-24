@@ -9,10 +9,14 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     permissions:
-      contents: write  # Required to upload the release
+      contents: write
+      deployments: write
+      
 
     steps:
       - name: Checkout
@@ -27,16 +31,22 @@ jobs:
         run: npm install
 
       - name: Build app
-        run: npx electron-builder -l
+        run: npx electron-builder
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-   
+
+      - name: Build Mac x64
+        if: matrix.os == 'macos-latest'
+        run: npx electron-builder --mac --x64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Upload Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref }}
           files: |
+            dist/*.zip
             dist/*.AppImage
-          overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
