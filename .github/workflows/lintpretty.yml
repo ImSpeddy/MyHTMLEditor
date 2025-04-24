@@ -36,7 +36,7 @@ jobs:
       - name: Prettify code with Prettier
         uses: creyD/prettier_action@v4.3
         with:
-          prettier_options: --write
+          prettier_options: "--write '**/*.{js,json,html,css}'"
 
       - name: Skip if commit is from workflow (prevents recursion)
         if: startsWith(github.event.head_commit.message, 'WF:')
