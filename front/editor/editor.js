@@ -115,53 +115,65 @@ async function closeFile(file) {
 		const dontSaveButton = document.getElementById("notSaveButtonDialog");
 		const cancelButton = document.getElementById("cancelSaveButtonDialog");
 
-		cancelButton.addEventListener("click", () => {
-			dialog.close();
-		}, {once: true});
+		cancelButton.addEventListener(
+			"click",
+			() => {
+				dialog.close();
+			},
+			{ once: true }
+		);
 
-		dontSaveButton.addEventListener("click", () => {
-			OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
-			div.remove();
-			dialog.close();
+		dontSaveButton.addEventListener(
+			"click",
+			() => {
+				OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+				div.remove();
+				dialog.close();
 
-			if (OpenedFiles.GETJSONDATA().length === 0) {
-				unloadFiles();
-				if (isClosing) {
-					ipcRenderer.send("closeWindow");
+				if (OpenedFiles.GETJSONDATA().length === 0) {
+					unloadFiles();
+					if (isClosing) {
+						ipcRenderer.send("closeWindow");
+					}
+					return;
+				} else {
+					if (currentFile === file) {
+						const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
+						loadFileIntoEditor(nextFile);
+					}
 				}
-				return;
-			} else {
-				if (currentFile === file) {
-					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
-					loadFileIntoEditor(nextFile);
-				}
-			}
-		}, {once: true});
+			},
+			{ once: true }
+		);
 
-		saveButton.addEventListener("click", () => {
-			ipcRenderer.send(
-				"save-file",
-				file,
-				OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data")
-			);
+		saveButton.addEventListener(
+			"click",
+			() => {
+				ipcRenderer.send(
+					"save-file",
+					file,
+					OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data")
+				);
 
-			OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
-			div.remove();
-			dialog.close();
+				OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+				div.remove();
+				dialog.close();
 
-			if (OpenedFiles.GETJSONDATA().length === 0) {
-				unloadFiles();
-				if (isClosing) {
-					ipcRenderer.send("closeWindow");
+				if (OpenedFiles.GETJSONDATA().length === 0) {
+					unloadFiles();
+					if (isClosing) {
+						ipcRenderer.send("closeWindow");
+					}
+					return;
+				} else {
+					if (currentFile === file) {
+						const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
+						loadFileIntoEditor(nextFile);
+					}
 				}
-				return;
-			} else {
-				if (currentFile === file) {
-					const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
-					loadFileIntoEditor(nextFile);
-				}
-			}
-		}, {once: true});
+			},
+			{ once: true }
+		);
 	} else {
 		OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
 
