@@ -37,5 +37,6 @@ jobs:
           tag_name: ${{ github.ref }}
           files: |
             dist/*.zip       # For Windows
+          overwrite: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
