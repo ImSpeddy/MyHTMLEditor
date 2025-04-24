@@ -15,7 +15,7 @@
 		"artifactName": "HTMLEditor-${version}-mac-${arch}.zip"
 	},
 	"linux": {
-		"target": "AppImage",
-		"artifactName": "HTMLEditor-${version}-linux.AppImage"
+		"target": "zip",
+		"artifactName": "HTMLEditor-${version}-linux.zip"
 	}
 }
