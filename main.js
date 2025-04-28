@@ -108,53 +108,6 @@ ipcMain.handle("new-window-set", async (event, args) => {
 	return openedDisplays.FINDQUICKINDEX("fileLink", args);
 });
 
-ipcMain.on("new-editor", async () => {
-	const result = await dialog.showOpenDialog({
-		properties: ["openFile"],
-		filters: [
-			{
-				name: "Web development files",
-				extensions: [
-					"html",
-					"htm",
-					"mjs",
-					"cjs",
-					"jsx",
-					"ts",
-					"css",
-					"js",
-					"json",
-					"tsx",
-					"md",
-					"txt",
-					"php",
-					"xml"
-				]
-			}
-		]
-	});
-	if (!result.canceled && result.filePaths && result.filePaths[0]) {
-		let editWindow = launchWindow("./front/editor/editor.html", {
-			width: 600,
-			height: 600,
-			minWidth: 600,
-			minHeight: 400,
-			webPreferences: { nodeIntegration: true, contextIsolation: false }
-		});
-		editWindow.webContents.send("open-editor", result.filePaths[0]);
-	}
-});
-
-ipcMain.handle("get-file-data", (event, file) => {
-	const filedata = fs.readFileSync(file, { encoding: "utf-8" });
-
-	return filedata;
-});
-
-ipcMain.on("save-file", (event, file, data) => {
-	fs.writeFileSync(file, data, { options: "utf-8" });
-});
-
 ipcMain.handle("filePickerDialog", async () => {
 	const result = await dialog.showOpenDialog({
 		properties: ["openFile"],
@@ -183,19 +136,6 @@ ipcMain.handle("filePickerDialog", async () => {
 	return result.filePaths[0];
 });
 
-ipcMain.on("new-file-wdw", () => {
-	launchWindow("./front/newFileDialog/newFileDialog.html", {
-		width: 350,
-		height: 350,
-		resizable: true,
-		fullscreenable: false,
-		webPreferences: {
-			nodeIntegration: true,
-			contextIsolation: false
-		}
-	});
-});
-
 ipcMain.handle("get-dir", async () => {
 	const result = await dialog.showOpenDialog({
 		properties: ["openDirectory"]
@@ -206,19 +146,6 @@ ipcMain.handle("get-dir", async () => {
 	} else {
 		return { dir: null, status: -1 };
 	}
-});
-
-ipcMain.handle("get-preset-list", () => {
-	const presetFiles = fs.readdirSync("./filePresets", { withFileTypes: true });
-	let files = [];
-
-	presetFiles.forEach((element) => {
-		if (element.isFile()) {
-			files.push(element);
-		}
-	});
-
-	return files;
 });
 
 ipcMain.handle("createFile", (event, args) => {
