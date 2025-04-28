@@ -149,7 +149,14 @@ async function closeFile(file) {
 		saveButton.addEventListener(
 			"click",
 			() => {
-				fs.writeFileSync(file, OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data"), { options: "utf-8" });
+				fs.writeFileSync(
+					file,
+					OpenedFiles.READ(
+						OpenedFiles.FINDQUICKINDEX("fileLink", file),
+						"data"
+					),
+					{ options: "utf-8" }
+				);
 				OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
 				div.remove();
 				dialog.close();
@@ -346,10 +353,14 @@ const saveButton = document.getElementById("SaveBtn");
 
 function saveFile() {
 	if (currentFile === null) return;
-	fs.writeFileSync(currentFile, OpenedFiles.READ(
-		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-		"data"
-	), { options: "utf-8" });
+	fs.writeFileSync(
+		currentFile,
+		OpenedFiles.READ(
+			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+			"data"
+		),
+		{ options: "utf-8" }
+	);
 	OpenedFiles.SET(
 		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 		"savedFile",
