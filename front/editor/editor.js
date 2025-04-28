@@ -149,12 +149,7 @@ async function closeFile(file) {
 		saveButton.addEventListener(
 			"click",
 			() => {
-				ipcRenderer.send(
-					"save-file",
-					file,
-					OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data")
-				);
-
+				fs.writeFileSync(file, OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data"), { options: "utf-8" });
 				OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
 				div.remove();
 				dialog.close();
@@ -351,14 +346,10 @@ const saveButton = document.getElementById("SaveBtn");
 
 function saveFile() {
 	if (currentFile === null) return;
-	ipcRenderer.send(
-		"save-file",
-		currentFile,
-		OpenedFiles.READ(
-			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-			"data"
-		)
-	);
+	fs.writeFileSync(currentFile, OpenedFiles.READ(
+		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+		"data"
+	), { options: "utf-8" });
 	OpenedFiles.SET(
 		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 		"savedFile",
@@ -617,16 +608,35 @@ dirBtn.addEventListener("click", () => {
 	});
 });
 
+/*
+	const presetFiles = fs.readdirSync("./filePresets", { withFileTypes: true });
+	let files = [];
+
+	presetFiles.forEach((element) => {
+		if (element.isFile()) {
+			files.push(element);
+		}
+	});
+
+	return files;
+*/
+
 document.addEventListener("DOMContentLoaded", () => {
 	const list = document.getElementById("presetPicker");
-	ipcRenderer.invoke("get-preset-list").then((data) => {
-		data.forEach((element) => {
-			const option = document.createElement("option");
-			option.value = `${element.parentPath}\\${element.name}`;
-			option.innerHTML = element.name;
+	const presetFiles = fs.readdirSync("./filePresets", { withFileTypes: true });
+	let files = [];
 
-			list.appendChild(option);
-		});
+	presetFiles.forEach((element) => {
+		if (element.isFile()) {
+			files.push(element);
+		}
+	});
+	files.forEach((element) => {
+		const option = document.createElement("option");
+		option.value = `${element.parentPath}\\${element.name}`;
+		option.innerHTML = element.name;
+
+		list.appendChild(option);
 	});
 });
 
