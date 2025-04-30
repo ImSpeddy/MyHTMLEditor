@@ -1,6 +1,6 @@
 {
 	"name": "htmleditor",
-	"version": "0.9.0",
+	"version": "0.10.0",
 	"description": "Live Editor for HTML, CSS and JS",
 	"main": "main.js",
 	"scripts": {
