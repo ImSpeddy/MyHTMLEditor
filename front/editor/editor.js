@@ -419,7 +419,7 @@ function loadFileIntoEditor(file) {
 				OpenedFiles.SET(
 					OpenedFiles.FINDQUICKINDEX("fileLink", lastCurrentFile),
 					"data",
-					textArea.innerText.replace(/\n/g, "\r\n")
+					textArea.innerText
 				);
 
 				OpenedFiles.SET(
