@@ -8,7 +8,6 @@
 - Creates new file div
 - Handle file opening
 - Handle file closing
-	- Handle file closing: Create Save Dialog
 - Load file into editor
 - Save cursor position on blur
 - Hides field if no file is opened
@@ -131,6 +130,7 @@ async function openFile(file, callback) {
 
 ///////////////////////////////////////////////////////////////
 // Handle file closing
+// - Create Save Dialog
 ///////////////////////////////////////////////////////////////
 
 async function closeFile(file) {
@@ -145,9 +145,30 @@ async function closeFile(file) {
 		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") !==
 		savedData
 	) {
+
 		///////////////////////////////////////////////////////////////
 		// Handle file closing: Create Save Dialog
+		// - Append Children
 		///////////////////////////////////////////////////////////////
+
+		
+		if(document.getElementById("saveDialog") === null){
+			const saveDialog = document.createElement("dialog");
+				const saveButton = document.createElement("button");
+				const dontSaveButton = document.createElement("button");
+				const cancelButton = document.createElement("button");
+
+			///////////////////////////////////////////////////////////////
+			// Handle file closing: Create Save Dialog: Append Children
+			///////////////////////////////////////////////////////////////	
+			saveDialog.appendChild(saveButton);
+			saveDialog.appendChild(dontSaveButton);
+			saveDialog.appendChild(cancelButton);
+		}else{
+			return;
+		}
+		
+
 		const div = document.getElementById(getFileDivIdFromLink(file));
 		const dialog = document.getElementById("saveDialog");
 		dialog.showModal();
