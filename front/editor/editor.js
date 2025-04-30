@@ -1,3 +1,28 @@
+/*
+///////////////////////////////////////////////////////////////
+			Index - Search with Ctrl + F (VSCode)
+///////////////////////////////////////////////////////////////
+
+- Library Import
+- Setup Needle DB
+- Creates new file div
+- Handle file opening
+- Handle file closing
+	- Handle file closing: Create Save Dialog
+- Load file into editor
+- Save cursor position on blur
+- Hides field if no file is opened
+- New File Button
+- New File Dialog
+- Open Viewer
+- Pick Opened Display Dialog
+
+*/
+
+///////////////////////////////////////////////////////////////
+// Library Import
+///////////////////////////////////////////////////////////////
+
 const { ipcRenderer } = require("electron");
 const textArea = document.getElementById("TextArea");
 const lineNumbers = document.getElementById("lineNumbers");
@@ -13,11 +38,16 @@ const fs = require("fs");
 var fieldShown = false;
 var isClosing = false;
 
-// Setup needle table
+///////////////////////////////////////////////////////////////
+// Setup Needle DB
+///////////////////////////////////////////////////////////////
+
 // Import Library
 const needle = require("needle-db");
+
 // Setup Table
 let OpenedFiles = new needle();
+
 // Setup Table Columns
 OpenedFiles.NEWCOLUMN("fileLink"); // E:\\example\\example.js
 OpenedFiles.NEWCOLUMN("fileName"); // example.js
@@ -38,6 +68,10 @@ function printOnBackConsole(args) { // eslint-disable-line
 	// Debug function
 	ipcRenderer.send("printOnBackConsole", args);
 }
+
+///////////////////////////////////////////////////////////////
+// Creates new file div
+///////////////////////////////////////////////////////////////
 
 async function newFileDiv(file) {
 	const fileDiv = document.createElement("div");
@@ -95,6 +129,10 @@ async function openFile(file, callback) {
 	checkField();
 }
 
+///////////////////////////////////////////////////////////////
+// Handle file closing
+///////////////////////////////////////////////////////////////
+
 async function closeFile(file) {
 	if (OpenedFiles.GETJSONDATA().length === 0 && isClosing) {
 		ipcRenderer.send("closeWindow");
@@ -107,6 +145,9 @@ async function closeFile(file) {
 		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") !==
 		savedData
 	) {
+		///////////////////////////////////////////////////////////////
+		// Handle file closing: Create Save Dialog
+		///////////////////////////////////////////////////////////////
 		const div = document.getElementById(getFileDivIdFromLink(file));
 		const dialog = document.getElementById("saveDialog");
 		dialog.showModal();
@@ -618,19 +659,6 @@ dirBtn.addEventListener("click", () => {
 		}
 	});
 });
-
-/*
-	const presetFiles = fs.readdirSync("./filePresets", { withFileTypes: true });
-	let files = [];
-
-	presetFiles.forEach((element) => {
-		if (element.isFile()) {
-			files.push(element);
-		}
-	});
-
-	return files;
-*/
 
 document.addEventListener("DOMContentLoaded", () => {
 	const list = document.getElementById("presetPicker");
