@@ -145,110 +145,107 @@ async function closeFile(file) {
 		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") !==
 		savedData
 	) {
-
 		///////////////////////////////////////////////////////////////
 		// Handle file closing: Create Save Dialog
 		// - Create dialog elements
 		// - Append children & Show dialog
 		///////////////////////////////////////////////////////////////
 
-		
-			if(document.getElementById("saveDialog") === null){
-				const saveDialog = document.createElement("dialog");
-				saveDialog.id = "saveDialog"
-				const div = document.getElementById(getFileDivIdFromLink(file));
+		if (document.getElementById("saveDialog") === null) {
+			const saveDialog = document.createElement("dialog");
+			saveDialog.id = "saveDialog";
+			const div = document.getElementById(getFileDivIdFromLink(file));
 
-					///////////////////////////////////////////////////////////////
-					// Handle file closing: Create Save Dialog: Create dialog elements
-					///////////////////////////////////////////////////////////////	
-						const saveDialogText = document.createElement("p");
-							saveDialogText.id = "saveDialogText";
-							saveDialogText.innerHTML = "File is not saved"
-						const saveButton = document.createElement("button");
-							saveButton.id = "saveButtonDialog"
-							saveButton.innerHTML = "Save"
-							saveButton.addEventListener(
-								"click",
-								() => {
-									fs.writeFileSync(
-										file,
-										OpenedFiles.READ(
-											OpenedFiles.FINDQUICKINDEX("fileLink", file),
-											"data"
-										),
-										{ options: "utf-8" }
-									);
-									OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
-									div.remove();
-									saveDialog.remove();
-					
-									if (OpenedFiles.GETJSONDATA().length === 0) {
-										unloadFiles();
-										if (isClosing) {
-											ipcRenderer.send("closeWindow");
-										}
-										return;
-									} else {
-										if (currentFile === file) {
-											const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
-											loadFileIntoEditor(nextFile);
-										}
-									}
-								},
-								{ once: true }
-							);
+			///////////////////////////////////////////////////////////////
+			// Handle file closing: Create Save Dialog: Create dialog elements
+			///////////////////////////////////////////////////////////////
+			const saveDialogText = document.createElement("p");
+			saveDialogText.id = "saveDialogText";
+			saveDialogText.innerHTML = "File is not saved";
+			const saveButton = document.createElement("button");
+			saveButton.id = "saveButtonDialog";
+			saveButton.innerHTML = "Save";
+			saveButton.addEventListener(
+				"click",
+				() => {
+					fs.writeFileSync(
+						file,
+						OpenedFiles.READ(
+							OpenedFiles.FINDQUICKINDEX("fileLink", file),
+							"data"
+						),
+						{ options: "utf-8" }
+					);
+					OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+					div.remove();
+					saveDialog.remove();
 
-						const dontSaveButton = document.createElement("button");
-							dontSaveButton.id = "dontSaveButtonDialog"
-							dontSaveButton.innerHTML = "Don't save";
-							dontSaveButton.addEventListener(
-								"click",
-								() => {
-									OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
-									div.remove();
-									saveDialog.remove();
-					
-									if (OpenedFiles.GETJSONDATA().length === 0) {
-										unloadFiles();
-										if (isClosing) {
-											ipcRenderer.send("closeWindow");
-										}
-										return;
-									} else {
-										if (currentFile === file) {
-											const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
-											loadFileIntoEditor(nextFile);
-										}
-									}
-								},
-								{ once: true }
-							);
+					if (OpenedFiles.GETJSONDATA().length === 0) {
+						unloadFiles();
+						if (isClosing) {
+							ipcRenderer.send("closeWindow");
+						}
+						return;
+					} else {
+						if (currentFile === file) {
+							const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
+							loadFileIntoEditor(nextFile);
+						}
+					}
+				},
+				{ once: true }
+			);
 
-						const cancelButton = document.createElement("button");
-							cancelButton.id = "cancelSaveButtonDialog"
-							cancelButton.innerHTML = "Cancel";
-							cancelButton.addEventListener(
-								"click",
-								() => {
-									saveDialog.remove();
-								},
-								{ once: true }
-							);
+			const dontSaveButton = document.createElement("button");
+			dontSaveButton.id = "dontSaveButtonDialog";
+			dontSaveButton.innerHTML = "Don't save";
+			dontSaveButton.addEventListener(
+				"click",
+				() => {
+					OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+					div.remove();
+					saveDialog.remove();
 
-				///////////////////////////////////////////////////////////////
-				// Handle file closing: Create Save Dialog: Append children & Show dialog
-				///////////////////////////////////////////////////////////////	
-					saveDialog.appendChild(saveDialogText);
-					saveDialog.appendChild(saveButton);
-					saveDialog.appendChild(dontSaveButton);
-					saveDialog.appendChild(cancelButton);
+					if (OpenedFiles.GETJSONDATA().length === 0) {
+						unloadFiles();
+						if (isClosing) {
+							ipcRenderer.send("closeWindow");
+						}
+						return;
+					} else {
+						if (currentFile === file) {
+							const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
+							loadFileIntoEditor(nextFile);
+						}
+					}
+				},
+				{ once: true }
+			);
 
-					document.body.appendChild(saveDialog);
-					saveDialog.showModal();
-				
-			}else{
-				return;
-			}
+			const cancelButton = document.createElement("button");
+			cancelButton.id = "cancelSaveButtonDialog";
+			cancelButton.innerHTML = "Cancel";
+			cancelButton.addEventListener(
+				"click",
+				() => {
+					saveDialog.remove();
+				},
+				{ once: true }
+			);
+
+			///////////////////////////////////////////////////////////////
+			// Handle file closing: Create Save Dialog: Append children & Show dialog
+			///////////////////////////////////////////////////////////////
+			saveDialog.appendChild(saveDialogText);
+			saveDialog.appendChild(saveButton);
+			saveDialog.appendChild(dontSaveButton);
+			saveDialog.appendChild(cancelButton);
+
+			document.body.appendChild(saveDialog);
+			saveDialog.showModal();
+		} else {
+			return;
+		}
 	} else {
 		OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
 
