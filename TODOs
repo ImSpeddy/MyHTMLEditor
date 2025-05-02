@@ -4,12 +4,6 @@
         Icons
         Create README
 
-    Cleanup before release
-
-    Remove Linked Display if Display is closed
-
-    Move functions to front
-
 BUGS:
     Blank lines counted as double at the end of the file
 
