@@ -205,5 +205,5 @@ ipcMain.on("printOpenedDisplays", () => {
 });
 
 ipcMain.on("restartDisplay", (event, args) => {
-	openedDisplays.READ(args, "window").webContents.reload();
+	openedDisplays.READ(args, "window").loadFile(openedDisplays.READ(args, "fileLink"));
 });
