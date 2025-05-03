@@ -3,23 +3,31 @@
 			Index - Search with Ctrl + F (VSCode)
 ///////////////////////////////////////////////////////////////
 
-- Library Import
-- Setup Needle DB
-- Creates new file div
-- Handle file opening
-- Handle file closing
-- Load file into editor
-- Save cursor position on blur
-- Hides field if no file is opened
-- New File Button
-- New File Dialog
-- Open Viewer
-- Pick Opened Display Dialog
+	- Module Import
+	- Setup Needle DB
+	- Control Variables
+	- Creates new file div
+	- Handle file opening
+	- Handle file closing
+	- Setup line numbers
+	- Handle Enter and Tab keys
+	- Handle Alt, Ctrl and Shift shortcuts
+	- Handle Saving
+	- Load file into editor
+	- Refresh Editor
+	- Handle App Closing
+	- Save cursor position on blur
+	- Hides field if no file is opened
+	- New File Button
+	- New File Dialog
+	- Open Viewer
+	- Pick Opened Display Dialog
+	- Others
 
 */
 
 ///////////////////////////////////////////////////////////////
-// Library Import
+// Module Import
 ///////////////////////////////////////////////////////////////
 
 const { ipcRenderer } = require("electron");
@@ -31,11 +39,8 @@ const {
 	getFileNameFromLink
 } = require("./modules/fileStringFunctions");
 const highlighter = require("./highlight");
-
+const { getCaretPosition, setCaretPosition } = require("./modules/caret");
 const fs = require("fs");
-
-var fieldShown = false;
-var isClosing = false;
 
 ///////////////////////////////////////////////////////////////
 // Setup Needle DB
@@ -58,15 +63,13 @@ OpenedFiles.NEWCOLUMN("savedScroll");
 OpenedFiles.NEWCOLUMN("savedCursor");
 OpenedFiles.NEWCOLUMN("savedFile");
 
-const { getCaretPosition, setCaretPosition } = require("./modules/caret");
+///////////////////////////////////////////////////////////////
+// Control Variables
+///////////////////////////////////////////////////////////////
 
+var fieldShown = false;
+var isClosing = false;
 let currentFile = null;
-
-// prettier-ignore
-function printOnBackConsole(args) { // eslint-disable-line
-	// Debug function
-	ipcRenderer.send("printOnBackConsole", args);
-}
 
 ///////////////////////////////////////////////////////////////
 // Creates new file div
@@ -127,6 +130,18 @@ async function openFile(file, callback) {
 	}
 	checkField();
 }
+
+function openNewFile() {
+	ipcRenderer.invoke("filePickerDialog").then((data) => {
+		if (data) {
+			openFile(data, () => {
+				loadFileIntoEditor(data);
+			});
+		}
+	});
+}
+
+document.getElementById("openFile").addEventListener("click", openNewFile);
 
 ///////////////////////////////////////////////////////////////
 // Handle file closing
@@ -271,6 +286,10 @@ async function closeFile(file) {
 	}
 }
 
+///////////////////////////////////////////////////////////////
+// Setup line numbers
+///////////////////////////////////////////////////////////////
+
 function updateLineNumbers() {
 	const lines = textArea.innerText.split("\n").length;
 	let lineNumberContent = "";
@@ -317,6 +336,10 @@ textArea.addEventListener("input", () => {
 	textArea.scrollTop = scrollPosition; // Restore scroll position
 });
 
+///////////////////////////////////////////////////////////////
+// Handle Enter and Tab keys
+///////////////////////////////////////////////////////////////
+
 textArea.addEventListener("keydown", async (event) => {
 	if (event.key === "Enter") {
 		event.preventDefault();
@@ -331,6 +354,10 @@ textArea.addEventListener("keydown", async (event) => {
 		setCaretPosition(caretOffset + indent.length);
 	}
 });
+
+///////////////////////////////////////////////////////////////
+// Handle Alt, Ctrl and Shift shortcuts
+///////////////////////////////////////////////////////////////
 
 document.addEventListener("keydown", async (event) => {
 	if (event.ctrlKey) {
@@ -399,25 +426,9 @@ document.addEventListener("keydown", async (event) => {
 	}
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-	checkField();
-});
-
-ipcRenderer.on("open-editor", (event, file) => {
-	document.addEventListener("DOMContentLoaded", () => {
-		openFile(file, () => {
-			document
-				.getElementById(getFileDivIdFromLink(file))
-				.classList.add("curFileDiv");
-			document
-				.getElementById(getFileDivIdFromLink(file))
-				.classList.remove("fileDiv");
-
-			loadFileIntoEditor(file);
-		});
-		checkField();
-	});
-});
+///////////////////////////////////////////////////////////////
+// Handle Saving
+///////////////////////////////////////////////////////////////
 
 const saveButton = document.getElementById("SaveBtn");
 
@@ -446,6 +457,10 @@ function saveFile() {
 }
 
 saveButton.addEventListener("click", saveFile);
+
+///////////////////////////////////////////////////////////////
+// Preserve scroll and cursor position on focus out
+///////////////////////////////////////////////////////////////
 
 textArea.addEventListener("focusout", () => {
 	if (currentFile !== null) {
@@ -541,17 +556,9 @@ function loadFileIntoEditor(file) {
 	checkField();
 }
 
-function openNewFile() {
-	ipcRenderer.invoke("filePickerDialog").then((data) => {
-		if (data) {
-			openFile(data, () => {
-				loadFileIntoEditor(data);
-			});
-		}
-	});
-}
-
-document.getElementById("openFile").addEventListener("click", openNewFile);
+///////////////////////////////////////////////////////////////
+// Refresh Editor
+///////////////////////////////////////////////////////////////
 
 async function refreshEditor() {
 	if (currentFile === null) return;
@@ -594,6 +601,10 @@ document.getElementById("RefreshEditor").addEventListener("click", async () => {
 ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 	OpenedFiles.SET(fileID, "linkedDisplay", display);
 });
+
+//////////////////////////////////////////////////////////////////
+// Handle App Closing
+//////////////////////////////////////////////////////////////////
 
 window.addEventListener("beforeunload", (event) => {
 	isClosing = true;
@@ -659,6 +670,10 @@ function unloadFiles() {
 	updateLineNumbers();
 	checkField();
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+	checkField();
+});
 
 //////////////////////////////////////////////////////////
 // New File Button
@@ -803,3 +818,13 @@ pickWindowBtn.addEventListener("click", () => {
 		document.getElementById("windowPicker").value = "none";
 	}
 });
+
+/////////////////////////////////////////////////////////
+// Others
+/////////////////////////////////////////////////////////
+
+// prettier-ignore
+function printOnBackConsole(args) { // eslint-disable-line
+	// Debug function
+	ipcRenderer.send("printOnBackConsole", args);
+}
