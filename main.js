@@ -185,7 +185,7 @@ ipcMain.on("forceCloseWindow", (event) => {
 	if (senderWindow) {
 		senderWindow.destroy();
 	}
-})
+});
 
 ipcMain.on("printOnBackConsole", (event, args) => {
 	console.log(args);
