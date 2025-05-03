@@ -1,21 +1,22 @@
 {
-	"appId": "com.speddy.htmleditor",
-	"productName": "HTMLEditor",
+	"appId": "com.speddy.webbox",
+	"productName": "webbox",
 	"directories": {
 		"output": "dist"
 	},
 	"files": ["!filePresets/**"],
 	"extraResources": [{ "from": "filePresets", "to": "../filePresets" }],
+	"icon": "resources/icon/icon.ico",
 	"win": {
 		"target": "zip",
-		"artifactName": "HTMLEditor-${version}-win.zip"
+		"artifactName": "webbox-${version}-win.zip"
 	},
 	"mac": {
 		"target": "zip",
-		"artifactName": "HTMLEditor-${version}-mac-${arch}.zip"
+		"artifactName": "webbox-${version}-mac-${arch}.zip"
 	},
 	"linux": {
 		"target": "zip",
-		"artifactName": "HTMLEditor-${version}-linux.zip"
+		"artifactName": "webbox-${version}-linux.zip"
 	}
 }
