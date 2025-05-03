@@ -6,6 +6,7 @@
 	},
 	"files": ["!filePresets/**"],
 	"extraResources": [{ "from": "filePresets", "to": "../filePresets" }],
+	"icon": "resources/icon/icon.ico",
 	"win": {
 		"target": "zip",
 		"artifactName": "webbox-${version}-win.zip"
