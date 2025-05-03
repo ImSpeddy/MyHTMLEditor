@@ -536,7 +536,7 @@ function loadFileIntoEditor(file) {
 
 		updateLineNumbers();
 
-		document.title = `${getFileNameFromLink(file)} - HTMLEditor`;
+		document.title = `${getFileNameFromLink(file)} - WebBox`;
 	}
 	checkField();
 }
@@ -653,7 +653,7 @@ function checkField() {
 }
 
 function unloadFiles() {
-	document.title = `HTMLEditor`;
+	document.title = `WebBox`;
 	currentFile = null;
 	textArea.innerText = "";
 	updateLineNumbers();
