@@ -270,7 +270,7 @@ async function closeFile(file) {
 		if (OpenedFiles.GETJSONDATA().length === 0) {
 			unloadFiles();
 			if (isClosing) {
-				ipcRenderer.send("closeWindow");
+				ipcRenderer.send("forceCloseWindow");
 			}
 			return;
 		} else {
@@ -282,7 +282,7 @@ async function closeFile(file) {
 	}
 	checkField();
 	if (isClosing && OpenedFiles.GETJSONDATA().length === 0) {
-		ipcRenderer.send("closeWindow");
+		ipcRenderer.send("forceCloseWindow");
 	}
 }
 
@@ -613,9 +613,8 @@ window.addEventListener("beforeunload", (event) => {
 		OpenedFiles.GETJSONDATA().forEach(async (e) => {
 			await closeFile(e.fileLink);
 		});
-		ipcRenderer.send("closeWindow");
 	} else {
-		ipcRenderer.send("closeWindow");
+		ipcRenderer.send("forceCloseWindow");
 	}
 });
 

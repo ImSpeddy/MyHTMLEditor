@@ -177,6 +177,16 @@ ipcMain.on("closeWindow", (event) => {
 	}
 });
 
+ipcMain.on("forceCloseWindow", (event) => {
+	const senderWindow = BrowserWindow.getAllWindows().find(
+		(win) => win.webContents === event.sender
+	);
+
+	if (senderWindow) {
+		senderWindow.destroy();
+	}
+})
+
 ipcMain.on("printOnBackConsole", (event, args) => {
 	console.log(args);
 });
