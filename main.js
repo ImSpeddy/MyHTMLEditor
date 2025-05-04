@@ -4,9 +4,8 @@ const {
 	BrowserWindow,
 	ipcMain,
 	dialog,
-	webContents
 } = require("electron");
-const fs = require("fs");
+
 const needle = require("needle-db");
 
 // Setup OpenedDisplaysDB
@@ -27,6 +26,7 @@ const createWindow = () => {
 		minWidth: 600,
 		minHeight: 400,
 		webPreferences: { nodeIntegration: true, contextIsolation: false }
+		//autoHideMenuBar: true // Commented out for debugging
 	});
 
 	window.on("closed", () => {
@@ -64,7 +64,11 @@ ipcMain.on("new-window", async () => {
 		newWdwFMT.SET("fileLink", result.filePaths[0]);
 		newWdwFMT.SET(
 			"window",
-			launchWindow(result.filePaths[0], { width: 500, height: 500 })
+			launchWindow(result.filePaths[0], {
+				width: 500,
+				height: 500,
+				webPreferences: { nodeIntegration: true }
+			})
 		);
 
 		openedDisplays.PUSH(newWdwFMT);
@@ -95,7 +99,14 @@ ipcMain.handle("new-window-set", async (event, args) => {
 	const newWdwFMT = openedDisplays.FORMAT();
 
 	newWdwFMT.SET("fileLink", args);
-	newWdwFMT.SET("window", launchWindow(args, { width: 500, height: 500 }));
+	newWdwFMT.SET(
+		"window",
+		launchWindow(args, {
+			width: 500,
+			height: 500,
+			webPreferences: { nodeIntegration: true }
+		})
+	);
 
 	openedDisplays.PUSH(newWdwFMT);
 
@@ -105,7 +116,10 @@ ipcMain.handle("new-window-set", async (event, args) => {
 			openedDisplays.DELETE(openedDisplays.FINDQUICKINDEX("fileLink", args));
 		});
 
-	return openedDisplays.FINDQUICKINDEX("fileLink", args);
+	return openedDisplays.READ(
+		openedDisplays.FINDQUICKINDEX("fileLink", args),
+		"fileLink"
+	);
 });
 
 ipcMain.handle("filePickerDialog", async () => {
@@ -148,25 +162,6 @@ ipcMain.handle("get-dir", async () => {
 	}
 });
 
-ipcMain.handle("createFile", (event, args) => {
-	let filedata = "";
-
-	if (args.preset !== "none") {
-		filedata = fs.readFileSync(args.preset, { encoding: "utf-8" });
-	}
-
-	let ans = 0;
-
-	fs.writeFile(`${args.dir}\\${args.name}`, filedata, function (err) {
-		if (err) {
-			ans = err;
-			throw err;
-		}
-	});
-
-	return ans;
-});
-
 ipcMain.on("closeWindow", (event) => {
 	const senderWindow = BrowserWindow.getAllWindows().find(
 		(win) => win.webContents === event.sender
@@ -199,15 +194,6 @@ ipcMain.handle("pickOpenedDisplay", async () => {
 	return openedDisplaysReduced;
 });
 
-ipcMain.on(
-	"connectWindowSelection",
-	(event, value, callerFile, CallerWindow) => {
-		webContents
-			.fromId(CallerWindow)
-			.send("syncLinkedDisplay", callerFile, value);
-	}
-);
-
 ipcMain.on("printOpenedDisplays", () => {
 	// Function for debugging
 
@@ -216,6 +202,11 @@ ipcMain.on("printOpenedDisplays", () => {
 
 ipcMain.on("restartDisplay", (event, args) => {
 	openedDisplays
-		.READ(args, "window")
-		.loadFile(openedDisplays.READ(args, "fileLink"));
+		.READ(openedDisplays.FINDQUICKINDEX("fileLink", args), "window")
+		.loadFile(
+			openedDisplays.READ(
+				openedDisplays.FINDQUICKINDEX("fileLink", args),
+				"fileLink"
+			)
+		);
 });
