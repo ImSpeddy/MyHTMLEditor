@@ -877,5 +877,6 @@ function printOnBackConsole(args) { // eslint-disable-line
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-	document.getElementById("versionIndicator").innerHTML = `WebBox v${require("../../package.json").version}`;
-})
+	document.getElementById("versionIndicator").innerHTML =
+		`WebBox v${require("../../package.json").version}`;
+});
