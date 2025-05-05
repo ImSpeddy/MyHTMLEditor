@@ -41,9 +41,9 @@ openedDisplays.NEWCOLUMN("window");
 ///////////////////////////////////////////////////////////////
 // Setup Main Editor
 ///////////////////////////////////////////////////////////////
-
+let mainWindow = null;
 const createWindow = () => {
-	const window = launchWindow("./front/editor/editor.html", {
+	mainWindow = launchWindow("./front/editor/editor.html", {
 		width: 600,
 		height: 600,
 		minWidth: 600,
@@ -52,7 +52,7 @@ const createWindow = () => {
 		//autoHideMenuBar: true // Commented out for debugging
 	});
 
-	window.on("closed", () => {
+	mainWindow.on("closed", () => {
 		app.quit();
 	});
 };
@@ -95,10 +95,8 @@ function createNewDisplay(fileLink){
 		.webContents.on("destroyed", () => {
 			openedDisplays.DELETE(
 				openedDisplays.FINDQUICKINDEX("fileLink", fileLink)
-
-				// TODO: Send an event to the editor window to clear any linked windows
-
 			);
+			mainWindow.webContents.send("deleteWindow", fileLink);
 		});
 }
 

@@ -23,6 +23,7 @@
 	- Open Viewer
 	- Pick Opened Display Dialog
 	- Load Highlighter
+	- Handle Window Deletion
 	- Others
 
 */
@@ -852,6 +853,18 @@ const link = document.createElement("link");
 link.rel = "stylesheet";
 link.href = `file://${cssPath}`;
 document.head.appendChild(link);
+
+//////////////////////////////////////////////////////////
+// Handle Window Deletion
+/////////////////////////////////////////////////////////
+
+ipcRenderer.on("deleteWindow", (event, fileLink) => {
+	const linkedEditor = OpenedFiles.FINDQUICKINDEX("linkedDisplay", fileLink);
+
+	if(linkedEditor !== -1) {
+		OpenedFiles.SET(linkedEditor, "linkedDisplay", null);
+	}
+});
 
 /////////////////////////////////////////////////////////
 // Others
