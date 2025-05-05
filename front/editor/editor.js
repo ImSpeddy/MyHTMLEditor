@@ -22,6 +22,7 @@
 	- New File Dialog
 	- Open Viewer
 	- Pick Opened Display Dialog
+	- Load Highlighter
 	- Others
 
 */
@@ -41,6 +42,7 @@ const {
 const highlighter = require("./highlight");
 const { getCaretPosition, setCaretPosition } = require("./modules/caret");
 const fs = require("fs");
+const path = require("path");
 
 ///////////////////////////////////////////////////////////////
 // Setup Needle DB
@@ -839,6 +841,17 @@ pickWindowBtn.addEventListener("click", () => {
 		pickOpenedDisplayDialog.close();
 	}
 });
+
+//////////////////////////////////////////////////////////
+// Load Highlighter
+/////////////////////////////////////////////////////////
+
+const cssPath = path.join(process.cwd(), "front", "editor", "highlighter.css");
+
+const link = document.createElement("link");
+link.rel = "stylesheet";
+link.href = `file://${cssPath}`;
+document.head.appendChild(link);
 
 /////////////////////////////////////////////////////////
 // Others
