@@ -4,8 +4,14 @@
 	"directories": {
 		"output": "dist"
 	},
-	"files": ["!filePresets/**"],
-	"extraResources": [{ "from": "filePresets", "to": "../filePresets" }],
+	"files": ["!filePresets/**", "!front/editor/highlighter.css"],
+	"extraResources": [
+		{ "from": "filePresets", "to": "../filePresets" },
+		{
+			"from": "front/editor/highlighter.css",
+			"to": "../front/editor/highlighter.css"
+		}
+	],
 	"icon": "resources/icon/icon.ico",
 	"win": {
 		"target": "zip",

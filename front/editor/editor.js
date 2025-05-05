@@ -1,6 +1,6 @@
 /*
 ///////////////////////////////////////////////////////////////
-			Index - Search with Ctrl + F (VSCode)
+		editor.js / Index - Search with Ctrl + F (VSCode)
 ///////////////////////////////////////////////////////////////
 
 	- Module Import
@@ -22,6 +22,8 @@
 	- New File Dialog
 	- Open Viewer
 	- Pick Opened Display Dialog
+	- Load Highlighter
+	- Handle Window Deletion
 	- Others
 
 */
@@ -41,6 +43,7 @@ const {
 const highlighter = require("./highlight");
 const { getCaretPosition, setCaretPosition } = require("./modules/caret");
 const fs = require("fs");
+const path = require("path");
 
 ///////////////////////////////////////////////////////////////
 // Setup Needle DB
@@ -382,11 +385,9 @@ document.addEventListener("keydown", async (event) => {
 			}
 		} else if (event.key.toLowerCase() === "w") {
 			event.preventDefault();
+			if (currentFile === null) return;
 			if (event.shiftKey) {
-				if (
-					currentFile === null ||
-					(!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))
-				) {
+				if (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm")) {
 					ipcRenderer.send("new-window");
 				} else {
 					ipcRenderer.invoke("new-window-set", currentFile).then((response) => {
@@ -575,8 +576,19 @@ async function refreshEditor() {
 		});
 
 		OpenedDisplays.forEach((e) => {
+			Array.from(document.getElementById("windowPicker").children).forEach(
+				(child) => {
+					child.remove();
+				}
+			);
+			// <option value="none">(none)</option>
+			const noOption = document.createElement("option");
+			noOption.value = "none";
+			noOption.innerHTML = "(none)";
+			document.getElementById("windowPicker").appendChild(noOption);
+
 			const option = document.createElement("option");
-			option.value = e.window;
+			option.value = e.fileLink;
 			const splittedFileLink = e.fileLink.split("\\");
 			option.innerHTML = `${splittedFileLink[splittedFileLink.length - 2]}\\${splittedFileLink[splittedFileLink.length - 1]}`;
 			document.getElementById("windowPicker").appendChild(option);
@@ -746,20 +758,33 @@ createBtn.addEventListener("click", () => {
 	if (args.dir == null || args.name == null || args.preset == null) {
 		alert("Argument missing.");
 	} else {
-		ipcRenderer.invoke("createFile", args).then((response) => {
-			if (response == 0) {
-				openFile(`${args.dir}\\${args.name}`, () => {
-					loadFileIntoEditor(`${args.dir}\\${args.name}`);
-				});
-				document.getElementById("filenameField").value = "";
-				dir = null;
-				document.getElementById("fileDirLbl").innerHTML = "No folder selected";
-				document.getElementById("presetPicker").value = "none";
-				document.getElementById("newFileDialog").close();
-			} else {
-				alert("Error in file creation");
+		let filedata = "";
+
+		if (args.preset !== "none") {
+			filedata = fs.readFileSync(args.preset, { encoding: "utf-8" });
+		}
+
+		let ans = 0;
+
+		fs.writeFile(`${args.dir}\\${args.name}`, filedata, function (err) {
+			if (err) {
+				ans = err;
+				throw err;
 			}
 		});
+
+		if (ans == 0) {
+			openFile(`${args.dir}\\${args.name}`, () => {
+				loadFileIntoEditor(`${args.dir}\\${args.name}`);
+			});
+			document.getElementById("filenameField").value = "";
+			dir = null;
+			document.getElementById("fileDirLbl").innerHTML = "No folder selected";
+			document.getElementById("presetPicker").value = "none";
+			document.getElementById("newFileDialog").close();
+		} else {
+			alert("Error in file creation");
+		}
 	}
 });
 
@@ -770,11 +795,9 @@ createBtn.addEventListener("click", () => {
 const openViewerBtn = document.getElementById("OpenViewerBtn");
 
 openViewerBtn.addEventListener("click", (event) => {
+	if (currentFile === null) return;
 	if (event.shiftKey) {
-		if (
-			currentFile === null ||
-			(!currentFile.endsWith(".html") && !currentFile.endsWith(".htm"))
-		) {
+		if (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm")) {
 			ipcRenderer.send("new-window");
 		} else {
 			ipcRenderer.invoke("new-window-set", currentFile).then((response) => {
@@ -807,7 +830,7 @@ cancelDisplayPickBtn.addEventListener("click", () => {
 const pickWindowBtn = document.getElementById("pickWindowBtn");
 
 pickWindowBtn.addEventListener("click", () => {
-	if (document.getElementById("windowPicker").value != "none") {
+	if (document.getElementById("windowPicker").value !== "none") {
 		OpenedFiles.SET(
 			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 			"linkedDisplay",
@@ -815,7 +838,32 @@ pickWindowBtn.addEventListener("click", () => {
 		);
 		pickOpenedDisplayDialog.close();
 		document.getElementById("windowPicker").value = "none";
+	} else {
+		pickOpenedDisplayDialog.close();
 	}
+});
+
+//////////////////////////////////////////////////////////
+// Load Highlighter
+/////////////////////////////////////////////////////////
+
+const cssPath = path.join(process.cwd(), "front", "editor", "highlighter.css");
+
+const link = document.createElement("link");
+link.rel = "stylesheet";
+link.href = `file://${cssPath}`;
+document.head.appendChild(link);
+
+//////////////////////////////////////////////////////////
+// Handle Window Deletion
+/////////////////////////////////////////////////////////
+
+ipcRenderer.on("deleteWindow", (event, fileLink) => {
+	const linkedEditors = OpenedFiles.SEARCH("linkedDisplay", fileLink);
+
+	linkedEditors.forEach((e) => {
+		OpenedFiles.SET(e, "linkedDisplay", null);
+	});
 });
 
 /////////////////////////////////////////////////////////

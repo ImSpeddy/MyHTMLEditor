@@ -1,36 +1,53 @@
-// Import libraries
-const {
-	app,
-	BrowserWindow,
-	ipcMain,
-	dialog,
-	webContents
-} = require("electron");
-const fs = require("fs");
+/*
+///////////////////////////////////////////////////////////////
+		main.js / Index - Search with Ctrl + F (VSCode)
+///////////////////////////////////////////////////////////////
+
+	- Module Import
+	- Setup Needle DB
+	- Setup Main Editor
+	- Handle New Window Creation
+	- Handle file picking
+	- Handle directory picking
+	- Handle window closures
+	- Handle Display Restart
+	- Others
+
+*/
+
+///////////////////////////////////////////////////////////////
+// Module Import
+///////////////////////////////////////////////////////////////
+
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+
+const launchWindow = require("./modules/launchWindow");
+
+///////////////////////////////////////////////////////////////
+// Setup Needle DB
+///////////////////////////////////////////////////////////////
+
 const needle = require("needle-db");
-
-// Setup OpenedDisplaysDB
-
 const openedDisplays = new needle();
 
 openedDisplays.NEWCOLUMN("fileLink");
 openedDisplays.NEWCOLUMN("window");
 
-// Import Dependencies
-const launchWindow = require("./modules/launchWindow");
-
-// Setup Window
+///////////////////////////////////////////////////////////////
+// Setup Main Editor
+///////////////////////////////////////////////////////////////
+let mainWindow = null;
 const createWindow = () => {
-	const window = launchWindow("./front/editor/editor.html", {
+	mainWindow = launchWindow("./front/editor/editor.html", {
 		width: 600,
 		height: 600,
 		minWidth: 600,
 		minHeight: 400,
 		webPreferences: { nodeIntegration: true, contextIsolation: false }
+		//autoHideMenuBar: true // Commented out for debugging
 	});
 
-	window.on("closed", () => {
-		// TODO: Save editor state
+	mainWindow.on("closed", () => {
 		app.quit();
 	});
 };
@@ -44,6 +61,36 @@ app.on("activate", () => {
 app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") app.quit();
 });
+
+///////////////////////////////////////////////////////////////
+// Handle New Window Creation
+// - Handle set window creation
+///////////////////////////////////////////////////////////////
+
+function createNewDisplay(fileLink) {
+	const newWdwFMT = openedDisplays.FORMAT();
+
+	newWdwFMT.SET("fileLink", fileLink);
+	newWdwFMT.SET(
+		"window",
+		launchWindow(fileLink, {
+			width: 500,
+			height: 500,
+			webPreferences: { nodeIntegration: true }
+		})
+	);
+
+	openedDisplays.PUSH(newWdwFMT);
+
+	openedDisplays
+		.READ(openedDisplays.FINDQUICKINDEX("fileLink", fileLink), "window")
+		.webContents.on("destroyed", () => {
+			openedDisplays.DELETE(
+				openedDisplays.FINDQUICKINDEX("fileLink", fileLink)
+			);
+			mainWindow.webContents.send("deleteWindow", fileLink);
+		});
+}
 
 ipcMain.on("new-window", async () => {
 	const result = await dialog.showOpenDialog({
@@ -59,28 +106,13 @@ ipcMain.on("new-window", async () => {
 		});
 	}
 	if (!result.canceled && result.filePaths && result.filePaths[0] && flag) {
-		const newWdwFMT = openedDisplays.FORMAT();
-
-		newWdwFMT.SET("fileLink", result.filePaths[0]);
-		newWdwFMT.SET(
-			"window",
-			launchWindow(result.filePaths[0], { width: 500, height: 500 })
-		);
-
-		openedDisplays.PUSH(newWdwFMT);
-
-		openedDisplays
-			.READ(
-				openedDisplays.FINDQUICKINDEX("fileLink", result.filePaths[0]),
-				"window"
-			)
-			.webContents.on("destroyed", () => {
-				openedDisplays.DELETE(
-					openedDisplays.FINDQUICKINDEX("fileLink", result.filePaths[0])
-				);
-			});
+		createNewDisplay(result.filePaths[0]);
 	}
 });
+
+///////////////////////////////////////////////////////////////
+// Handle New Window Creation: Handle set window creation
+///////////////////////////////////////////////////////////////
 
 ipcMain.handle("new-window-set", async (event, args) => {
 	var flag = true;
@@ -92,21 +124,13 @@ ipcMain.handle("new-window-set", async (event, args) => {
 		});
 	}
 	if (flag == false) return -1;
-	const newWdwFMT = openedDisplays.FORMAT();
-
-	newWdwFMT.SET("fileLink", args);
-	newWdwFMT.SET("window", launchWindow(args, { width: 500, height: 500 }));
-
-	openedDisplays.PUSH(newWdwFMT);
-
-	openedDisplays
-		.READ(openedDisplays.FINDQUICKINDEX("fileLink", args), "window")
-		.webContents.on("destroyed", () => {
-			openedDisplays.DELETE(openedDisplays.FINDQUICKINDEX("fileLink", args));
-		});
-
-	return openedDisplays.FINDQUICKINDEX("fileLink", args);
+	createNewDisplay(args);
+	return args;
 });
+
+///////////////////////////////////////////////////////////////
+// Handle file picking
+///////////////////////////////////////////////////////////////
 
 ipcMain.handle("filePickerDialog", async () => {
 	const result = await dialog.showOpenDialog({
@@ -136,6 +160,10 @@ ipcMain.handle("filePickerDialog", async () => {
 	return result.filePaths[0];
 });
 
+///////////////////////////////////////////////////////////////
+// Handle directory picking
+///////////////////////////////////////////////////////////////
+
 ipcMain.handle("get-dir", async () => {
 	const result = await dialog.showOpenDialog({
 		properties: ["openDirectory"]
@@ -148,24 +176,10 @@ ipcMain.handle("get-dir", async () => {
 	}
 });
 
-ipcMain.handle("createFile", (event, args) => {
-	let filedata = "";
-
-	if (args.preset !== "none") {
-		filedata = fs.readFileSync(args.preset, { encoding: "utf-8" });
-	}
-
-	let ans = 0;
-
-	fs.writeFile(`${args.dir}\\${args.name}`, filedata, function (err) {
-		if (err) {
-			ans = err;
-			throw err;
-		}
-	});
-
-	return ans;
-});
+///////////////////////////////////////////////////////////////
+// Handle window closures
+// - Force Close
+///////////////////////////////////////////////////////////////
 
 ipcMain.on("closeWindow", (event) => {
 	const senderWindow = BrowserWindow.getAllWindows().find(
@@ -177,6 +191,10 @@ ipcMain.on("closeWindow", (event) => {
 	}
 });
 
+///////////////////////////////////////////////////////////////
+// Handle window closure: Force Close
+///////////////////////////////////////////////////////////////
+
 ipcMain.on("forceCloseWindow", (event) => {
 	const senderWindow = BrowserWindow.getAllWindows().find(
 		(win) => win.webContents === event.sender
@@ -186,6 +204,25 @@ ipcMain.on("forceCloseWindow", (event) => {
 		senderWindow.destroy();
 	}
 });
+
+///////////////////////////////////////////////////////////////
+// Handle Display Restart
+///////////////////////////////////////////////////////////////
+
+ipcMain.on("restartDisplay", (event, args) => {
+	openedDisplays
+		.READ(openedDisplays.FINDQUICKINDEX("fileLink", args), "window")
+		.loadFile(
+			openedDisplays.READ(
+				openedDisplays.FINDQUICKINDEX("fileLink", args),
+				"fileLink"
+			)
+		);
+});
+
+///////////////////////////////////////////////////////////////
+// Others
+///////////////////////////////////////////////////////////////
 
 ipcMain.on("printOnBackConsole", (event, args) => {
 	console.log(args);
@@ -199,23 +236,8 @@ ipcMain.handle("pickOpenedDisplay", async () => {
 	return openedDisplaysReduced;
 });
 
-ipcMain.on(
-	"connectWindowSelection",
-	(event, value, callerFile, CallerWindow) => {
-		webContents
-			.fromId(CallerWindow)
-			.send("syncLinkedDisplay", callerFile, value);
-	}
-);
-
 ipcMain.on("printOpenedDisplays", () => {
 	// Function for debugging
 
 	console.log(openedDisplays.GETJSONDATA());
-});
-
-ipcMain.on("restartDisplay", (event, args) => {
-	openedDisplays
-		.READ(args, "window")
-		.loadFile(openedDisplays.READ(args, "fileLink"));
 });
