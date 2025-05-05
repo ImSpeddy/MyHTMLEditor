@@ -758,33 +758,33 @@ createBtn.addEventListener("click", () => {
 	if (args.dir == null || args.name == null || args.preset == null) {
 		alert("Argument missing.");
 	} else {
-			let filedata = "";
-		
-			if (args.preset !== "none") {
-				filedata = fs.readFileSync(args.preset, { encoding: "utf-8" });
-			}
-			
-			let ans = 0;
-		
-			fs.writeFile(`${args.dir}\\${args.name}`, filedata, function (err) {
-				if (err) {
-					ans = err;
-					throw err;
-				}
-			});
+		let filedata = "";
 
-			if (ans == 0) {
-				openFile(`${args.dir}\\${args.name}`, () => {
-					loadFileIntoEditor(`${args.dir}\\${args.name}`);
-				});
-				document.getElementById("filenameField").value = "";
-				dir = null;
-				document.getElementById("fileDirLbl").innerHTML = "No folder selected";
-				document.getElementById("presetPicker").value = "none";
-				document.getElementById("newFileDialog").close();
-			} else {
-				alert("Error in file creation");
+		if (args.preset !== "none") {
+			filedata = fs.readFileSync(args.preset, { encoding: "utf-8" });
+		}
+
+		let ans = 0;
+
+		fs.writeFile(`${args.dir}\\${args.name}`, filedata, function (err) {
+			if (err) {
+				ans = err;
+				throw err;
 			}
+		});
+
+		if (ans == 0) {
+			openFile(`${args.dir}\\${args.name}`, () => {
+				loadFileIntoEditor(`${args.dir}\\${args.name}`);
+			});
+			document.getElementById("filenameField").value = "";
+			dir = null;
+			document.getElementById("fileDirLbl").innerHTML = "No folder selected";
+			document.getElementById("presetPicker").value = "none";
+			document.getElementById("newFileDialog").close();
+		} else {
+			alert("Error in file creation");
+		}
 	}
 });
 
@@ -861,11 +861,9 @@ document.head.appendChild(link);
 ipcRenderer.on("deleteWindow", (event, fileLink) => {
 	const linkedEditors = OpenedFiles.SEARCH("linkedDisplay", fileLink);
 
-
 	linkedEditors.forEach((e) => {
 		OpenedFiles.SET(e, "linkedDisplay", null);
 	});
-
 });
 
 /////////////////////////////////////////////////////////

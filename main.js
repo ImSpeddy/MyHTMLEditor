@@ -19,12 +19,7 @@
 // Module Import
 ///////////////////////////////////////////////////////////////
 
-const {
-	app,
-	BrowserWindow,
-	ipcMain,
-	dialog,
-} = require("electron");
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 
 const launchWindow = require("./modules/launchWindow");
 
@@ -72,7 +67,7 @@ app.on("window-all-closed", () => {
 // - Handle set window creation
 ///////////////////////////////////////////////////////////////
 
-function createNewDisplay(fileLink){
+function createNewDisplay(fileLink) {
 	const newWdwFMT = openedDisplays.FORMAT();
 
 	newWdwFMT.SET("fileLink", fileLink);
@@ -88,10 +83,7 @@ function createNewDisplay(fileLink){
 	openedDisplays.PUSH(newWdwFMT);
 
 	openedDisplays
-		.READ(
-			openedDisplays.FINDQUICKINDEX("fileLink", fileLink),
-			"window"
-		)
+		.READ(openedDisplays.FINDQUICKINDEX("fileLink", fileLink), "window")
 		.webContents.on("destroyed", () => {
 			openedDisplays.DELETE(
 				openedDisplays.FINDQUICKINDEX("fileLink", fileLink)
@@ -133,7 +125,7 @@ ipcMain.handle("new-window-set", async (event, args) => {
 	}
 	if (flag == false) return -1;
 	createNewDisplay(args);
-	return args
+	return args;
 });
 
 ///////////////////////////////////////////////////////////////
@@ -202,7 +194,6 @@ ipcMain.on("closeWindow", (event) => {
 ///////////////////////////////////////////////////////////////
 // Handle window closure: Force Close
 ///////////////////////////////////////////////////////////////
-
 
 ipcMain.on("forceCloseWindow", (event) => {
 	const senderWindow = BrowserWindow.getAllWindows().find(
