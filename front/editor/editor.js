@@ -859,11 +859,13 @@ document.head.appendChild(link);
 /////////////////////////////////////////////////////////
 
 ipcRenderer.on("deleteWindow", (event, fileLink) => {
-	const linkedEditor = OpenedFiles.FINDQUICKINDEX("linkedDisplay", fileLink);
+	const linkedEditors = OpenedFiles.SEARCH("linkedDisplay", fileLink);
 
-	if(linkedEditor !== -1) {
-		OpenedFiles.SET(linkedEditor, "linkedDisplay", null);
-	}
+
+	linkedEditors.forEach((e) => {
+		OpenedFiles.SET(e, "linkedDisplay", null);
+	});
+
 });
 
 /////////////////////////////////////////////////////////
