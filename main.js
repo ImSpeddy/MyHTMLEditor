@@ -53,7 +53,6 @@ const createWindow = () => {
 	});
 
 	window.on("closed", () => {
-		// TODO: Save editor state
 		app.quit();
 	});
 };
@@ -96,6 +95,9 @@ function createNewDisplay(fileLink){
 		.webContents.on("destroyed", () => {
 			openedDisplays.DELETE(
 				openedDisplays.FINDQUICKINDEX("fileLink", fileLink)
+
+				// TODO: Send an event to the editor window to clear any linked windows
+
 			);
 		});
 }
