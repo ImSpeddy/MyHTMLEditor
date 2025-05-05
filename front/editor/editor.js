@@ -875,3 +875,7 @@ function printOnBackConsole(args) { // eslint-disable-line
 	// Debug function
 	ipcRenderer.send("printOnBackConsole", args);
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+	document.getElementById("versionIndicator").innerHTML = `WebBox v${require("../../package.json").version}`;
+})

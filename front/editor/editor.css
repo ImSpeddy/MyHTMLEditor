@@ -291,3 +291,9 @@ button:hover {
 	justify-self: center;
 	width: 100%;
 }
+
+h3 {
+	color: white;
+	font-family: "Arial";
+	font-weight: normal;
+}
