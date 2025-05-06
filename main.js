@@ -10,6 +10,7 @@
 	- Handle file picking
 	- Handle directory picking
 	- Handle window closures
+	- Close all displays
 	- Handle Display Restart
 	- Others
 
@@ -88,7 +89,11 @@ function createNewDisplay(fileLink) {
 			openedDisplays.DELETE(
 				openedDisplays.FINDQUICKINDEX("fileLink", fileLink)
 			);
-			mainWindow.webContents.send("deleteWindow", fileLink);
+			if(!mainWindow.isDestroyed()){
+				mainWindow.webContents.send("deleteWindow", fileLink);
+			} else {
+				app.quit()
+			}
 		});
 }
 
@@ -206,6 +211,16 @@ ipcMain.on("forceCloseWindow", (event) => {
 });
 
 ///////////////////////////////////////////////////////////////
+// Close all displays
+///////////////////////////////////////////////////////////////
+
+ipcMain.on("closeAllDisplays", ()=>{
+	openedDisplays.GETJSONDATA().forEach((e)=>{
+		e.window.close();
+	})
+})
+
+///////////////////////////////////////////////////////////////
 // Handle Display Restart
 ///////////////////////////////////////////////////////////////
 
@@ -218,6 +233,8 @@ ipcMain.on("restartDisplay", (event, args) => {
 				"fileLink"
 			)
 		);
+	openedDisplays
+	.READ(openedDisplays.FINDQUICKINDEX("fileLink", args), "window").show()
 });
 
 ///////////////////////////////////////////////////////////////
