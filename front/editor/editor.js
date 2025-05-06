@@ -618,8 +618,8 @@ ipcRenderer.on("syncLinkedDisplay", (event, fileID, display) => {
 // Handle App Closing
 //////////////////////////////////////////////////////////////////
 
-window.addEventListener("beforeunload", async(event) => {
-	ipcRenderer.send("closeAllDisplays")
+window.addEventListener("beforeunload", async (event) => {
+	ipcRenderer.send("closeAllDisplays");
 	isClosing = true;
 	if (OpenedFiles.GETJSONDATA().length > 0) {
 		event.preventDefault();

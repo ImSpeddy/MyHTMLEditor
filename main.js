@@ -89,10 +89,10 @@ function createNewDisplay(fileLink) {
 			openedDisplays.DELETE(
 				openedDisplays.FINDQUICKINDEX("fileLink", fileLink)
 			);
-			if(!mainWindow.isDestroyed()){
+			if (!mainWindow.isDestroyed()) {
 				mainWindow.webContents.send("deleteWindow", fileLink);
 			} else {
-				app.quit()
+				app.quit();
 			}
 		});
 }
@@ -214,11 +214,11 @@ ipcMain.on("forceCloseWindow", (event) => {
 // Close all displays
 ///////////////////////////////////////////////////////////////
 
-ipcMain.on("closeAllDisplays", ()=>{
-	openedDisplays.GETJSONDATA().forEach((e)=>{
+ipcMain.on("closeAllDisplays", () => {
+	openedDisplays.GETJSONDATA().forEach((e) => {
 		e.window.close();
-	})
-})
+	});
+});
 
 ///////////////////////////////////////////////////////////////
 // Handle Display Restart
@@ -234,7 +234,8 @@ ipcMain.on("restartDisplay", (event, args) => {
 			)
 		);
 	openedDisplays
-	.READ(openedDisplays.FINDQUICKINDEX("fileLink", args), "window").show()
+		.READ(openedDisplays.FINDQUICKINDEX("fileLink", args), "window")
+		.show();
 });
 
 ///////////////////////////////////////////////////////////////
