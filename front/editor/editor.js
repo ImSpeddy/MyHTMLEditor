@@ -109,7 +109,8 @@ async function newFileDiv(file) {
 // Handle file opening
 ///////////////////////////////////////////////////////////////
 
-async function openFile(file, callback) {
+function openFile(file, callback) {
+	console.log("Opening " + file);
 	if (OpenedFiles.FINDQUICKINDEX("fileLink", file) === -1) {
 		const fileFMT = OpenedFiles.FORMAT();
 		fileFMT.SET("fileLink", file);
@@ -122,7 +123,8 @@ async function openFile(file, callback) {
 
 		newFileDiv(file);
 
-		const fileData = await fs.readFileSync(file, { encoding: "utf-8" });
+		let fileData = fs.readFileSync(file, { encoding: "utf-8" });
+		console.log(fileData);
 		fileFMT.SET("data", fileData);
 		fileFMT.SET("savedFile", fileData);
 		OpenedFiles.PUSH(fileFMT);
@@ -749,7 +751,7 @@ document
 
 const createBtn = document.getElementById("createFileBtn");
 
-createBtn.addEventListener("click", () => {
+createBtn.addEventListener("click", async () => {
 	const args = {
 		name: document.getElementById("filenameField").value,
 		dir: dir,
@@ -767,12 +769,7 @@ createBtn.addEventListener("click", () => {
 
 		let ans = 0;
 
-		fs.writeFile(`${args.dir}\\${args.name}`, filedata, function (err) {
-			if (err) {
-				ans = err;
-				throw err;
-			}
-		});
+		fs.writeFileSync(`${args.dir}\\${args.name}`, filedata);
 
 		if (ans == 0) {
 			openFile(`${args.dir}\\${args.name}`, () => {
