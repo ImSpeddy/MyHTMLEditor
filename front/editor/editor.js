@@ -769,12 +769,7 @@ createBtn.addEventListener("click", async () => {
 
 		let ans = 0;
 
-		fs.writeFileSync(`${args.dir}\\${args.name}`, filedata, function (err) {
-			if (err) {
-				ans = err;
-				throw err;
-			}
-		});
+		fs.writeFileSync(`${args.dir}\\${args.name}`, filedata);
 
 		if (ans == 0) {
 			openFile(`${args.dir}\\${args.name}`, () => {
