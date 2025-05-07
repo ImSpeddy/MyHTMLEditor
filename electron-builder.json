@@ -12,7 +12,7 @@
 			"to": "../front/editor/highlighter.css"
 		}
 	],
-	"icon": "resources/icon/icon.ico",
+	"icon": "resources/icon/icon.png",
 	"win": {
 		"target": "zip",
 		"artifactName": "webbox-${version}-win.zip"
