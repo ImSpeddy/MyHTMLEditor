@@ -180,11 +180,7 @@ async function closeFile(file) {
 		? data.replace(/(?<!\r)\n/g, "\r\n")
 		: data.replace(/\r\n/g, "\n");
 
-
-	if (
-		data !==
-		savedData
-	) {
+	if (data !== savedData) {
 		///////////////////////////////////////////////////////////////
 		// Handle file closing: Create Save Dialog
 		// - Create dialog elements
