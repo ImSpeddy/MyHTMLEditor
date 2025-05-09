@@ -65,6 +65,7 @@ OpenedFiles.NEWCOLUMN("fileDivId");
 OpenedFiles.NEWCOLUMN("savedScroll");
 OpenedFiles.NEWCOLUMN("savedCursor");
 OpenedFiles.NEWCOLUMN("savedFile");
+OpenedFiles.NEWCOLUMN("usesCRLF");
 
 ///////////////////////////////////////////////////////////////
 // Control Variables
@@ -123,7 +124,11 @@ function openFile(file, callback) {
 
 		newFileDiv(file);
 
-		let fileData = fs.readFileSync(file, { encoding: "utf-8" });
+		const fileData = fs.readFileSync(file, { encoding: "utf-8" });
+		const usesCRLF = /\r\n/.test(fileData);
+
+		fileFMT.SET("usesCRLF", usesCRLF);
+
 		console.log(fileData);
 		fileFMT.SET("data", fileData);
 		fileFMT.SET("savedFile", fileData);
@@ -161,8 +166,23 @@ async function closeFile(file) {
 	let savedData;
 	savedData = await fs.readFileSync(file, { encoding: "utf-8" });
 
+	const data = OpenedFiles.READ(
+		OpenedFiles.FINDQUICKINDEX("fileLink", file),
+		"data"
+	);
+
+	const usesCRLF = OpenedFiles.READ(
+		OpenedFiles.FINDQUICKINDEX("fileLink", file),
+		"usesCRLF"
+	);
+
+	const normalized = usesCRLF
+		? data.replace(/(?<!\r)\n/g, "\r\n")
+		: data.replace(/\r\n/g, "\n");
+
+
 	if (
-		OpenedFiles.READ(OpenedFiles.FINDQUICKINDEX("fileLink", file), "data") !==
+		data !==
 		savedData
 	) {
 		///////////////////////////////////////////////////////////////
@@ -188,14 +208,7 @@ async function closeFile(file) {
 			saveButton.addEventListener(
 				"click",
 				() => {
-					fs.writeFileSync(
-						file,
-						OpenedFiles.READ(
-							OpenedFiles.FINDQUICKINDEX("fileLink", file),
-							"data"
-						),
-						{ options: "utf-8" }
-					);
+					fs.writeFileSync(file, normalized, { options: "utf-8" });
 					OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
 					div.remove();
 					saveDialog.remove();
@@ -437,14 +450,21 @@ const saveButton = document.getElementById("SaveBtn");
 
 function saveFile() {
 	if (currentFile === null) return;
-	fs.writeFileSync(
-		currentFile,
-		OpenedFiles.READ(
-			OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
-			"data"
-		),
-		{ options: "utf-8" }
+	const data = OpenedFiles.READ(
+		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+		"data"
 	);
+
+	const usesCRLF = OpenedFiles.READ(
+		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
+		"usesCRLF"
+	);
+
+	const normalized = usesCRLF
+		? data.replace(/(?<!\r)\n/g, "\r\n")
+		: data.replace(/\r\n/g, "\n");
+
+	fs.writeFileSync(currentFile, normalized, { options: "utf-8" });
 	OpenedFiles.SET(
 		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 		"savedFile",
@@ -767,22 +787,16 @@ createBtn.addEventListener("click", async () => {
 			filedata = fs.readFileSync(args.preset, { encoding: "utf-8" });
 		}
 
-		let ans = 0;
-
 		fs.writeFileSync(`${args.dir}\\${args.name}`, filedata);
 
-		if (ans == 0) {
-			openFile(`${args.dir}\\${args.name}`, () => {
-				loadFileIntoEditor(`${args.dir}\\${args.name}`);
-			});
-			document.getElementById("filenameField").value = "";
-			dir = null;
-			document.getElementById("fileDirLbl").innerHTML = "No folder selected";
-			document.getElementById("presetPicker").value = "none";
-			document.getElementById("newFileDialog").close();
-		} else {
-			alert("Error in file creation");
-		}
+		openFile(`${args.dir}\\${args.name}`, () => {
+			loadFileIntoEditor(`${args.dir}\\${args.name}`);
+		});
+		document.getElementById("filenameField").value = "";
+		dir = null;
+		document.getElementById("fileDirLbl").innerHTML = "No folder selected";
+		document.getElementById("presetPicker").value = "none";
+		document.getElementById("newFileDialog").close();
 	}
 });
 
