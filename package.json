@@ -4,6 +4,7 @@
 	"description": "Live Editor for HTML, CSS and JS",
 	"main": "main.js",
 	"scripts": {
+		"postinstall": "node scripts/postinstall.js",
 		"start": "electron ."
 	},
 	"author": "Ethan Mahlstedt",
