@@ -12,7 +12,7 @@ switch (platform) {
 		// macOS specific code
 		switch (arch) {
 			case "x64": {
-				if(fs.existsSync(path.join(__dirname, "darwin-x64", "postinstall"))) {
+				if (fs.existsSync(path.join(__dirname, "darwin-x64", "postinstall"))) {
 					const scripts = fs.readdirSync(
 						path.join(__dirname, "darwin-x64", "postinstall")
 					);
@@ -23,11 +23,13 @@ switch (platform) {
 							)();
 						}
 					});
-				}else return;
+				} else return;
 				break;
 			}
 			case "arm64": {
-				if(fs.existsSync(path.join(__dirname, "darwin-arm64", "postinstall"))) {
+				if (
+					fs.existsSync(path.join(__dirname, "darwin-arm64", "postinstall"))
+				) {
 					const scripts = fs.readdirSync(
 						path.join(__dirname, "darwin-arm64", "postinstall")
 					);
@@ -38,7 +40,7 @@ switch (platform) {
 							)();
 						}
 					});
-				}else return;
+				} else return;
 				break;
 			}
 			default:
@@ -46,7 +48,7 @@ switch (platform) {
 		}
 		break;
 	case "linux": {
-		if(fs.existsSync(path.join(__dirname, "linux", "postinstall"))) {
+		if (fs.existsSync(path.join(__dirname, "linux", "postinstall"))) {
 			const scripts = fs.readdirSync(
 				path.join(__dirname, "linux", "postinstall")
 			);
@@ -60,11 +62,11 @@ switch (platform) {
 					execSync(`${path.join(__dirname, "linux", "postinstall", script)}`);
 				}
 			});
-		}else return;
+		} else return;
 		break;
 	}
 	case "win32": {
-		if(fs.existsSync(path.join(__dirname, "win32", "postinstall"))) {
+		if (fs.existsSync(path.join(__dirname, "win32", "postinstall"))) {
 			const scripts = fs.readdirSync(
 				path.join(__dirname, "win32", "postinstall")
 			);
@@ -75,7 +77,7 @@ switch (platform) {
 					execSync(`${path.join(__dirname, "win32", "postinstall", script)}`);
 				}
 			});
-		}else return;
+		} else return;
 		break;
 	}
 	default:
