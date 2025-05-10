@@ -44,8 +44,8 @@ const createWindow = () => {
 		height: 600,
 		minWidth: 600,
 		minHeight: 400,
+		autoHideMenuBar: true, // Comment this line on development
 		webPreferences: { nodeIntegration: true, contextIsolation: false }
-		//autoHideMenuBar: true // Commented out for debugging
 	});
 
 	mainWindow.on("closed", () => {
@@ -175,7 +175,7 @@ ipcMain.handle("get-dir", async () => {
 	});
 
 	if (result.canceled == false && result.filePaths.length == 1) {
-		return { dir: result.filePaths, status: 0 };
+		return { dir: result.filePaths[0], status: 0 };
 	} else {
 		return { dir: null, status: -1 };
 	}
