@@ -111,7 +111,6 @@ async function newFileDiv(file) {
 ///////////////////////////////////////////////////////////////
 
 function openFile(file, callback) {
-	console.log("Opening " + file);
 	if (OpenedFiles.FINDQUICKINDEX("fileLink", file) === -1) {
 		const fileFMT = OpenedFiles.FORMAT();
 		fileFMT.SET("fileLink", file);
@@ -129,7 +128,6 @@ function openFile(file, callback) {
 
 		fileFMT.SET("usesCRLF", usesCRLF);
 
-		console.log(fileData);
 		fileFMT.SET("data", fileData);
 		fileFMT.SET("savedFile", fileData);
 		OpenedFiles.PUSH(fileFMT);
@@ -607,8 +605,8 @@ async function refreshEditor() {
 
 			const option = document.createElement("option");
 			option.value = e.fileLink;
-			const splittedFileLink = e.fileLink.split("\\");
-			option.innerHTML = `${splittedFileLink[splittedFileLink.length - 2]}\\${splittedFileLink[splittedFileLink.length - 1]}`;
+			const splittedFileLink = path.normalize(e.fileLink).split(path.sep);
+			option.innerHTML = path.join(splittedFileLink[splittedFileLink.length - 2], splittedFileLink[splittedFileLink.length - 1])
 			document.getElementById("windowPicker").appendChild(option);
 		});
 
@@ -746,7 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
 	files.forEach((element) => {
 		const option = document.createElement("option");
-		option.value = `${element.parentPath}\\${element.name}`;
+		option.value = path.join(element.parentPath, element.name);
 		option.innerHTML = element.name;
 
 		list.appendChild(option);
@@ -783,10 +781,10 @@ createBtn.addEventListener("click", async () => {
 			filedata = fs.readFileSync(args.preset, { encoding: "utf-8" });
 		}
 
-		fs.writeFileSync(`${args.dir}\\${args.name}`, filedata);
+		fs.writeFileSync(path.join(args.dir, args.name), filedata);
 
-		openFile(`${args.dir}\\${args.name}`, () => {
-			loadFileIntoEditor(`${args.dir}\\${args.name}`);
+		openFile(path.join(args.dir, args.name), () => {
+			loadFileIntoEditor(path.join(args.dir, args.name));
 		});
 		document.getElementById("filenameField").value = "";
 		dir = null;
