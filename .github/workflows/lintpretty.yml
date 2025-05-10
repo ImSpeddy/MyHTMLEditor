@@ -1,0 +1,81 @@
+name: ESLint and Prettier
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  lint_and_prettier:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # Ensure write permissions to push changes
+
+    steps:
+      - name: Skip if commit is from workflow (prevents recursion)
+        if: startsWith(github.event.head_commit.message, 'WF:')  # Skip workflow-triggered commits
+        run: |
+          echo "Skipping commit because it is a workflow-triggered commit"
+          exit 0  # Exit early to avoid committing changes again
+    
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}  # Ensures the correct branch is checked out for PRs
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '23'  # Set the Node.js version (you can change it as per your requirement)
+
+      - name: Install dependencies
+        run: |
+          npm install
+
+      - name: Run ESLint with auto-fix
+        run: |
+          npx eslint --fix .  # Lint the code and automatically fix issues
+          
+      - name: Run Prettier
+        run: |
+          npx prettier --write '**/*.{js,json,html,css}'
+
+      - name: Set up Git credentials
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Commit linted and prettified code with prefix
+        run: |
+          # Check if there are any changes
+          if [[ -n $(git status --porcelain) ]]; then
+            # There are changes, commit them
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "actions@github.com"
+            
+            # Determine commit message based on event type
+            if [[ "${{ github.event_name }}" == "push" ]]; then
+              # For push events, use the commit message that triggered the push
+              ORIGINAL_COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+            elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              # For PR events, use the PR title
+              ORIGINAL_COMMIT_MESSAGE="${{ github.event.pull_request.title }}"
+            fi
+            
+            # Create a commit message with a prefix and original commit message
+            COMMIT_MESSAGE="WF: Lint and Prettier: ${ORIGINAL_COMMIT_MESSAGE}"
+            
+            # Add changes and commit with the new message
+            git add .
+            git commit -m "$COMMIT_MESSAGE"
+            git push
+          else
+            # No changes, skip commit
+            echo "No changes to commit"
+          fi

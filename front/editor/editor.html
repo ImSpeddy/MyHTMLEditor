@@ -3,24 +3,80 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Code Editor</title>
+		<title>WebBox</title>
 		<link rel="stylesheet" href="editor.css" />
 	</head>
 	<body>
 		<div id="FilePicker"></div>
 		<div id="Controls">
+			<button id="newFileBtn">New File</button>
 			<button id="SaveBtn">Save</button>
-			<button id="openFile">Load</button>
+			<button id="openFile">Open</button>
+			<div class="verticalLine"></div>
+			<button id="OpenViewerBtn">Open Viewer</button>
 			<button id="RefreshEditor">Refresh Editor</button>
 		</div>
-		<div id="TextAreaContainer">
-			<div id="lineNumbers"></div>
-			<textarea
-				id="TextArea"
-				placeholder="Write in here..."
-				autocorrect="off"
-			></textarea>
+		<div id="noOpenedFileContainer">
+			<div id="noOpenedFileDialog">
+				<img src="../../resources/icon/icon.png" width="192" height="192" />
+				<h3 id="versionIndicator">WebBox vx.x.x</h3>
+				<h1>No opened file...</h1>
+				<h2>
+					Open one using the "Open" button or create a new one using the "New
+					File" button
+				</h2>
+			</div>
 		</div>
+		<div id="TextAreaContainer" style="display: none">
+			<div id="lineNumbers"></div>
+			<div
+				id="TextArea"
+				contenteditable="true"
+				spellcheck="false"
+				tabindex="0"
+			></div>
+		</div>
+		<dialog id="newFileDialog">
+			<div class="mainContainerDiv">
+				<div id="fileNameDiv" class="containerDiv">
+					<label for="fileName">Filename: </label>
+					<textarea
+						name="fileName"
+						id="filenameField"
+						aria-label="Filename"
+					></textarea>
+				</div>
+				<div id="fileDirDiv" class="containerDiv">
+					<label for="PickFolderBtn">Folder: </label>
+					<button id="PickFolderBtn" name="PickFolderBtn">
+						Pick Folder...
+					</button>
+				</div>
+				<div id="fileDirLblDiv" class="containerDiv">
+					<label id="fileDirLbl">No folder selected</label>
+				</div>
+				<div id="presetDiv" class="containerDiv">
+					<label for="presetPicker">Pick preset file: </label>
+					<select name="presetPicker" id="presetPicker">
+						<option value="none">(none)</option>
+					</select>
+				</div>
+				<div id="createFileBtnDiv" class="containerDiv">
+					<button id="cancelFileCreationBtn">Cancel</button>
+					<button id="createFileBtn">Create File</button>
+				</div>
+			</div>
+		</dialog>
+		<dialog id="pickOpenedDisplay">
+			<div class="mainContainerDiv">
+				<label for="windowPicker">Pick window:</label>
+				<select name="windowPicker" id="windowPicker">
+					<option value="none">(none)</option>
+				</select>
+				<button id="cancelPickWindowBtn">Cancel</button>
+				<button id="pickWindowBtn">Pick Window</button>
+			</div>
+		</dialog>
 		<script src="editor.js"></script>
 	</body>
 </html>

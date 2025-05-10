@@ -1,0 +1,50 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'v*-prerelease'
+      - 'v*-dev'
+      - 'v*-rc*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '23'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build app
+        run: npx electron-builder
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Mac x64
+        if: matrix.os == 'macos-latest'
+        run: npx electron-builder --mac --x64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            dist/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
