@@ -1,16 +1,20 @@
+const path = require("path");
+
 function getFileNameFromLink(file) {
-	return file.split("\\")[file.split("\\").length - 1];
+	const parts = path.normalize(file).split(path.sep);
+	return parts[parts.length - 1];
 }
 
 function getFileDirFromLink(file) {
+	const parts = path.normalize(file).split(path.sep);
 	let fileDir = "";
 
-	file.split("\\").forEach((element, index, array) => {
+	parts.forEach((element, index, array) => {
 		if (index !== array.length - 1) {
 			if (index == 0) {
 				fileDir = element;
 			} else {
-				fileDir = `${fileDir}\\${element}`;
+				fileDir = path.join(fileDir, element);
 			}
 		}
 	});
