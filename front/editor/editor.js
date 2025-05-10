@@ -606,7 +606,10 @@ async function refreshEditor() {
 			const option = document.createElement("option");
 			option.value = e.fileLink;
 			const splittedFileLink = path.normalize(e.fileLink).split(path.sep);
-			option.innerHTML = path.join(splittedFileLink[splittedFileLink.length - 2], splittedFileLink[splittedFileLink.length - 1])
+			option.innerHTML = path.join(
+				splittedFileLink[splittedFileLink.length - 2],
+				splittedFileLink[splittedFileLink.length - 1]
+			);
 			document.getElementById("windowPicker").appendChild(option);
 		});
 
