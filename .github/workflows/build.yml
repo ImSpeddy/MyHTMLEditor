@@ -6,6 +6,7 @@ on:
       - 'v*'
       - 'v*-prerelease'
       - 'v*-dev'
+      - 'v*-rc*'
 
 jobs:
   build:
