@@ -12,29 +12,33 @@ switch (platform) {
 		// macOS specific code
 		switch (arch) {
 			case "x64": {
-				const scripts = fs.readdirSync(
-					path.join(__dirname, "darwin-x64", "postinstall")
-				);
-				scripts.forEach((script) => {
-					if (script.endsWith(".js")) {
-						require(
-							path.join(__dirname, "darwin-x64", "postinstall", script)
-						)();
-					}
-				});
+				if(fs.existsSync(path.join(__dirname, "darwin-x64", "postinstall"))) {
+					const scripts = fs.readdirSync(
+						path.join(__dirname, "darwin-x64", "postinstall")
+					);
+					scripts.forEach((script) => {
+						if (script.endsWith(".js")) {
+							require(
+								path.join(__dirname, "darwin-x64", "postinstall", script)
+							)();
+						}
+					});
+				}else return;
 				break;
 			}
 			case "arm64": {
-				const scripts = fs.readdirSync(
-					path.join(__dirname, "darwin-arm64", "postinstall")
-				);
-				scripts.forEach((script) => {
-					if (script.endsWith(".js")) {
-						require(
-							path.join(__dirname, "darwin-arm64", "postinstall", script)
-						)();
-					}
-				});
+				if(fs.existsSync(path.join(__dirname, "darwin-arm64", "postinstall"))) {
+					const scripts = fs.readdirSync(
+						path.join(__dirname, "darwin-arm64", "postinstall")
+					);
+					scripts.forEach((script) => {
+						if (script.endsWith(".js")) {
+							require(
+								path.join(__dirname, "darwin-arm64", "postinstall", script)
+							)();
+						}
+					});
+				}else return;
 				break;
 			}
 			default:
@@ -42,32 +46,36 @@ switch (platform) {
 		}
 		break;
 	case "linux": {
-		const scripts = fs.readdirSync(
-			path.join(__dirname, "linux", "postinstall")
-		);
-		scripts.forEach((script) => {
-			if (script.endsWith(".js")) {
-				require(path.join(__dirname, "linux", "postinstall", script))();
-			} else if (script.endsWith(".sh")) {
-				execSync(
-					`chmod +x ${path.join(__dirname, "linux", "postinstall", script)}`
-				);
-				execSync(`${path.join(__dirname, "linux", "postinstall", script)}`);
-			}
-		});
+		if(fs.existsSync(path.join(__dirname, "linux", "postinstall"))) {
+			const scripts = fs.readdirSync(
+				path.join(__dirname, "linux", "postinstall")
+			);
+			scripts.forEach((script) => {
+				if (script.endsWith(".js")) {
+					require(path.join(__dirname, "linux", "postinstall", script))();
+				} else if (script.endsWith(".sh")) {
+					execSync(
+						`chmod +x ${path.join(__dirname, "linux", "postinstall", script)}`
+					);
+					execSync(`${path.join(__dirname, "linux", "postinstall", script)}`);
+				}
+			});
+		}else return;
 		break;
 	}
 	case "win32": {
-		const scripts = fs.readdirSync(
-			path.join(__dirname, "win32", "postinstall")
-		);
-		scripts.forEach((script) => {
-			if (script.endsWith(".js")) {
-				require(path.join(__dirname, "win32", "postinstall", script))();
-			} else if (script.endsWith(".bat")) {
-				execSync(`${path.join(__dirname, "win32", "postinstall", script)}`);
-			}
-		});
+		if(fs.existsSync(path.join(__dirname, "win32", "postinstall"))) {
+			const scripts = fs.readdirSync(
+				path.join(__dirname, "win32", "postinstall")
+			);
+			scripts.forEach((script) => {
+				if (script.endsWith(".js")) {
+					require(path.join(__dirname, "win32", "postinstall", script))();
+				} else if (script.endsWith(".bat")) {
+					execSync(`${path.join(__dirname, "win32", "postinstall", script)}`);
+				}
+			});
+		}else return;
 		break;
 	}
 	default:
