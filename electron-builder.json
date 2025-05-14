@@ -18,8 +18,8 @@
 		"artifactName": "webbox-${version}-win.zip"
 	},
 	"mac": {
-		"target": "zip",
-		"artifactName": "webbox-${version}-mac-${arch}.zip"
+		"target": "dir",
+		"artifactName": "webbox-${version}-mac-${arch}"
 	},
 	"linux": {
 		"target": "zip",
