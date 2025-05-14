@@ -19,4 +19,4 @@ WebBox is an interactive code editor focused on web development, providing live 
 Developed as a school project by **Ethan Mahlstedt**
 
 ---
-<p align="center" style="font-size: 12px; font-weight: bold;">v1.0-rc1</p>
+<p style="font-size: 10px">Last modified at 12/05/25 by Ethan Mahlstedt; v1.0-rc1 </p>
