@@ -1,6 +1,6 @@
 {
 	"name": "webbox",
-	"version": "1.0.0-rc2",
+	"version": "1.0.0",
 	"description": "Live Editor for HTML, CSS and JS",
 	"main": "main.js",
 	"scripts": {
