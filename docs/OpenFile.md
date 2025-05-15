@@ -24,4 +24,4 @@ To open files, WebBox will prompt you to choose a file that matches the followin
 
 ---
 
-<p style="font-size: 10px">Last modified at 14/05/25 by Ethan Mahlstedt; v1.0-rc1 </p>
+<p style="font-size: 10px">Last modified at 14/05/25 by Ethan Mahlstedt; v1.0-rc2 </p>
