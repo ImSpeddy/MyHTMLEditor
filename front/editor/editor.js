@@ -220,7 +220,7 @@ async function closeFile(file) {
 				{ once: true }
 			);
 
-			function closeFileClearDialogs(div, saveDialog, file){
+			function closeFileClearDialogs(div, saveDialog, file) {
 				OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
 				div.remove();
 				saveDialog.remove();

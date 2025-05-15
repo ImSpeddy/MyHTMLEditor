@@ -4,7 +4,11 @@
 	"directories": {
 		"output": "dist"
 	},
-	"files": ["!filePresets/**", "!front/editor/highlighter.css", "!front/editor/editor.css"],
+	"files": [
+		"!filePresets/**",
+		"!front/editor/highlighter.css",
+		"!front/editor/editor.css"
+	],
 	"extraResources": [
 		{ "from": "filePresets", "to": "../filePresets" },
 		{
