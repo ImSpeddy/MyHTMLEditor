@@ -1,3 +1,5 @@
+/* Editor */
+
 html,
 body {
 	height: 100%;
@@ -68,8 +70,7 @@ body {
 .fileDivText {
 	font-family: "Segoe UI";
 	color: white;
-	margin: 0;
-	margin-right: 10px;
+	margin: 0 10px 0 0;
 	white-space: nowrap;
 }
 
@@ -88,26 +89,6 @@ body {
 }
 
 .fileDivBtn:hover {
-	background-color: rgb(64, 64, 64);
-	color: white;
-}
-
-button {
-	background-color: gray;
-	font-family: Arial;
-	color: black;
-	padding: 5px 10px;
-	border-radius: 5px;
-	border: 1px ridge black;
-	font-size: 16px;
-	font-weight: bold;
-	cursor: pointer;
-	transition:
-		background-color 0.3s ease,
-		color 0.3s ease;
-}
-
-button:hover {
 	background-color: rgb(64, 64, 64);
 	color: white;
 }
@@ -154,8 +135,6 @@ button:hover {
 	word-wrap: normal;
 	min-height: 100px; /* Ensure it has height */
 	box-sizing: border-box;
-	overflow-x: auto; /* Add horizontal scrollbar */
-	overflow-y: auto; /* Add vertical scrollbar */
 }
 
 #saveDialog {
@@ -258,7 +237,7 @@ textarea {
 
 #fileDirLbl {
 	font-weight: normal;
-	font-size: 12;
+	font-size: 12px;
 	text-wrap: wrap;
 	overflow-wrap: anywhere;
 }

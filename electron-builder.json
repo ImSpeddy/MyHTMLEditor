@@ -4,22 +4,26 @@
 	"directories": {
 		"output": "dist"
 	},
-	"files": ["!filePresets/**", "!front/editor/highlighter.css"],
+	"files": [
+		"!filePresets/**",
+		"!front/editor/highlighter.css",
+		"!front/editor/editor.css"
+	],
 	"extraResources": [
 		{ "from": "filePresets", "to": "../filePresets" },
 		{
 			"from": "front/editor/highlighter.css",
 			"to": "../front/editor/highlighter.css"
+		},
+		{
+			"from": "front/editor/editor.css",
+			"to": "../front/editor/editor.css"
 		}
 	],
 	"icon": "resources/icon/icon.png",
 	"win": {
 		"target": "zip",
 		"artifactName": "webbox-${version}-win.zip"
-	},
-	"mac": {
-		"target": "zip",
-		"artifactName": "webbox-${version}-mac-${arch}.zip"
 	},
 	"linux": {
 		"target": "zip",

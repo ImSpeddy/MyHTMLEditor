@@ -71,8 +71,8 @@ OpenedFiles.NEWCOLUMN("usesCRLF");
 // Control Variables
 ///////////////////////////////////////////////////////////////
 
-var fieldShown = false;
-var isClosing = false;
+let fieldShown = false;
+let isClosing = false;
 let currentFile = null;
 
 ///////////////////////////////////////////////////////////////
@@ -121,6 +121,7 @@ function openFile(file, callback) {
 		fileFMT.SET("savedScroll", null);
 		fileFMT.SET("savedCursor", null);
 
+		// noinspection JSIgnoredPromiseFromCall
 		newFileDiv(file);
 
 		const fileData = fs.readFileSync(file, { encoding: "utf-8" });
@@ -162,7 +163,7 @@ async function closeFile(file) {
 	}
 
 	let savedData;
-	savedData = await fs.readFileSync(file, { encoding: "utf-8" });
+	savedData = fs.readFileSync(file, { encoding: "utf-8" });
 
 	const data = OpenedFiles.READ(
 		OpenedFiles.FINDQUICKINDEX("fileLink", file),
@@ -202,23 +203,8 @@ async function closeFile(file) {
 			saveButton.addEventListener(
 				"click",
 				() => {
-					fs.writeFileSync(file, normalized, { options: "utf-8" });
-					OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
-					div.remove();
-					saveDialog.remove();
-
-					if (OpenedFiles.GETJSONDATA().length === 0) {
-						unloadFiles();
-						if (isClosing) {
-							ipcRenderer.send("closeWindow");
-						}
-						return;
-					} else {
-						if (currentFile === file) {
-							const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
-							loadFileIntoEditor(nextFile);
-						}
-					}
+					fs.writeFileSync(file, normalized, { encoding: "utf-8" });
+					closeFileClearDialogs(div, saveDialog, file);
 				},
 				{ once: true }
 			);
@@ -229,25 +215,28 @@ async function closeFile(file) {
 			dontSaveButton.addEventListener(
 				"click",
 				() => {
-					OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
-					div.remove();
-					saveDialog.remove();
-
-					if (OpenedFiles.GETJSONDATA().length === 0) {
-						unloadFiles();
-						if (isClosing) {
-							ipcRenderer.send("closeWindow");
-						}
-						return;
-					} else {
-						if (currentFile === file) {
-							const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
-							loadFileIntoEditor(nextFile);
-						}
-					}
+					closeFileClearDialogs(div, saveDialog, file);
 				},
 				{ once: true }
 			);
+
+			function closeFileClearDialogs(div, saveDialog, file) {
+				OpenedFiles.DELETE(OpenedFiles.FINDQUICKINDEX("fileLink", file));
+				div.remove();
+				saveDialog.remove();
+
+				if (OpenedFiles.GETJSONDATA().length === 0) {
+					unloadFiles();
+					if (isClosing) {
+						ipcRenderer.send("closeWindow");
+					}
+				} else {
+					if (currentFile === file) {
+						const nextFile = OpenedFiles.GETJSONDATA()[0].fileLink;
+						loadFileIntoEditor(nextFile);
+					}
+				}
+			}
 
 			const cancelButton = document.createElement("button");
 			cancelButton.id = "cancelSaveButtonDialog";
@@ -387,13 +376,14 @@ document.addEventListener("keydown", async (event) => {
 			openNewFile();
 		} else if (event.key.toLowerCase() === "q") {
 			event.preventDefault();
-			closeFile(currentFile);
+			await closeFile(currentFile);
 			if (OpenedFiles.GETJSONDATA().length === 0) {
 				isClosing = true;
 				ipcRenderer.send("closeWindow");
 			}
 		} else if (event.key.toLowerCase() === "w") {
 			event.preventDefault();
+			// noinspection DuplicatedCode
 			if (currentFile === null) return;
 			if (event.shiftKey) {
 				if (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm")) {
@@ -458,7 +448,7 @@ function saveFile() {
 		? data.replace(/(?<!\r)\n/g, "\r\n")
 		: data.replace(/\r\n/g, "\n");
 
-	fs.writeFileSync(currentFile, normalized, { options: "utf-8" });
+	fs.writeFileSync(currentFile, normalized, { encoding: "utf-8" });
 	OpenedFiles.SET(
 		OpenedFiles.FINDQUICKINDEX("fileLink", currentFile),
 		"savedFile",
@@ -605,10 +595,10 @@ async function refreshEditor() {
 
 			const option = document.createElement("option");
 			option.value = e.fileLink;
-			const splittedFileLink = path.normalize(e.fileLink).split(path.sep);
+			const splitFileLink = path.normalize(e.fileLink).split(path.sep);
 			option.innerHTML = path.join(
-				splittedFileLink[splittedFileLink.length - 2],
-				splittedFileLink[splittedFileLink.length - 1]
+				splitFileLink[splitFileLink.length - 2],
+				splitFileLink[splitFileLink.length - 1]
 			);
 			document.getElementById("windowPicker").appendChild(option);
 		});
@@ -642,6 +632,7 @@ window.addEventListener("beforeunload", async (event) => {
 	isClosing = true;
 	if (OpenedFiles.GETJSONDATA().length > 0) {
 		event.preventDefault();
+		// noinspection ES6MissingAwait
 		OpenedFiles.GETJSONDATA().forEach(async (e) => {
 			await closeFile(e.fileLink);
 		});
@@ -682,7 +673,7 @@ window.addEventListener("blur", () => {
 ///////////////////////////////////////////////////////////////
 
 function checkField() {
-	fieldShown = OpenedFiles.GETJSONDATA().length > 0 ? true : false;
+	fieldShown = OpenedFiles.GETJSONDATA().length > 0;
 	if (fieldShown) {
 		document.getElementById("noOpenedFileContainer").style.display = "none";
 		document.getElementById("noOpenedFileDialog").style.display = "none";
@@ -728,7 +719,7 @@ let dir = null;
 
 dirBtn.addEventListener("click", () => {
 	ipcRenderer.invoke("get-dir").then((response) => {
-		if (response.status == 0) {
+		if (response.status === 0) {
 			document.getElementById("fileDirLbl").innerHTML = response.dir;
 			dir = response.dir;
 		}
@@ -778,13 +769,13 @@ createBtn.addEventListener("click", async () => {
 	if (args.dir == null || args.name == null || args.preset == null) {
 		alert("Argument missing.");
 	} else {
-		let filedata = "";
+		let fileData = "";
 
 		if (args.preset !== "none") {
-			filedata = fs.readFileSync(args.preset, { encoding: "utf-8" });
+			fileData = fs.readFileSync(args.preset, { encoding: "utf-8" });
 		}
 
-		fs.writeFileSync(path.join(args.dir, args.name), filedata);
+		fs.writeFileSync(path.join(args.dir, args.name), fileData);
 
 		openFile(path.join(args.dir, args.name), () => {
 			loadFileIntoEditor(path.join(args.dir, args.name));
@@ -804,6 +795,7 @@ createBtn.addEventListener("click", async () => {
 const openViewerBtn = document.getElementById("OpenViewerBtn");
 
 openViewerBtn.addEventListener("click", (event) => {
+	// noinspection DuplicatedCode
 	if (currentFile === null) return;
 	if (event.shiftKey) {
 		if (!currentFile.endsWith(".html") && !currentFile.endsWith(".htm")) {
@@ -880,6 +872,7 @@ ipcRenderer.on("deleteWindow", (event, fileLink) => {
 /////////////////////////////////////////////////////////
 
 // prettier-ignore
+// noinspection JSUnusedLocalSymbols
 function printOnBackConsole(args) { // eslint-disable-line
 	// Debug function
 	ipcRenderer.send("printOnBackConsole", args);

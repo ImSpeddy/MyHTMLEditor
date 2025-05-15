@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
     permissions:
       contents: write
 
@@ -31,12 +31,6 @@ jobs:
 
       - name: Build app
         run: npx electron-builder
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build Mac x64
-        if: matrix.os == 'macos-latest'
-        run: npx electron-builder --mac --x64
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
