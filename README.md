@@ -11,7 +11,7 @@ WebBox is an interactive code editor focused on web development, providing live 
 * [Create a File](./docs/CreateFile.md)
 * [Open a File](./docs/OpenFile.md)
 * [Save a File](./docs/SaveFile.md)
-* [Create a Viewer Window](./docs/ViewerWindows.md)
+* [Viewer Windows](./docs/ViewerWindows.md)
 * [Shortcuts](./docs/Shortcuts.md)
 * [Customize Colors](./docs/CustomColors.md)
 

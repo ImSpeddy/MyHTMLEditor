@@ -100,7 +100,7 @@ function createNewDisplay(fileLink) {
 ipcMain.on("new-window", async () => {
 	const result = await dialog.showOpenDialog({
 		properties: ["openFile"],
-		filters: [{ name: "HTML Files", extensions: ["html"] }]
+		filters: [{ name: "HTML Files", extensions: ["html", "htm"] }]
 	});
 	var flag = true;
 	if (openedDisplays.GETJSONDATA().length > 0) {
