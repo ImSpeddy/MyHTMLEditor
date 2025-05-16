@@ -9,7 +9,7 @@
 ## Shortcut list
 
 | Shortcut           | Action                              |
-|--------------------|-------------------------------------|
+| ------------------ | ----------------------------------- |
 | `Ctrl + N`         | Create File                         |
 | `Ctrl + O`         | Open File                           |
 | `Ctrl + S`         | Save File                           |
