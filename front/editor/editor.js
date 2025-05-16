@@ -845,15 +845,26 @@ pickWindowBtn.addEventListener("click", () => {
 });
 
 //////////////////////////////////////////////////////////
-// Load Highlighter
+// Load Stylesheets
 /////////////////////////////////////////////////////////
 
-const cssPath = path.join(process.cwd(), "front", "editor", "highlighter.css");
+const HighlighterPath = path.join(
+	process.cwd(),
+	"front",
+	"editor",
+	"highlighter.css"
+);
+const EditorPath = path.join(process.cwd(), "front", "editor", "editor.css");
 
-const link = document.createElement("link");
-link.rel = "stylesheet";
-link.href = `file://${cssPath}`;
-document.head.appendChild(link);
+appendStylesheet(HighlighterPath);
+appendStylesheet(EditorPath);
+
+function appendStylesheet(dir) {
+	const link = document.createElement("link");
+	link.rel = "stylesheet";
+	link.href = `file://${dir}`;
+	document.head.appendChild(link);
+}
 
 //////////////////////////////////////////////////////////
 // Handle Window Deletion

@@ -1,4 +1,3 @@
-
 ###### Go back to [index](../README.md)
 
 ---
@@ -13,7 +12,7 @@ When closing files, WebBox will prompt you to save the file if it has unsaved ch
 
 ![fileSaveDialog.png](../resources/docs/fileSaving/fileSaveDialog.png)
 
-Whenever a file has unsaved changes, the file name will be displayed in *italic* in the tab bar. This is a visual indicator that the file has unsaved changes.
+Whenever a file has unsaved changes, the file name will be displayed in _italic_ in the tab bar. This is a visual indicator that the file has unsaved changes.
 
 ---
 

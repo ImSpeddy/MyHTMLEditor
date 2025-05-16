@@ -20,7 +20,6 @@ Filename **must** include extension.
 
 ---
 
-
 Filename and folder **are mandatory**.
 
 ---
